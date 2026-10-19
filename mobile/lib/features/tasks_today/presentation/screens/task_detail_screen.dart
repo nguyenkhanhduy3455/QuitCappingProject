@@ -6,6 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/translations.dart';
 import '../../../auth/presentation/auth_controller.dart';
 import '../../../proof/data/submission_repository.dart';
+import '../../../roadmap/data/goal_repository.dart';
 import '../../../roadmap/domain/task_model.dart';
 import '../../../roadmap/presentation/roadmap_controller.dart';
 import '../today_tasks_controller.dart';
@@ -193,6 +194,123 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     );
   }
 
+  void _showEditTaskDialog(Translations tr) {
+    final titleController = TextEditingController(text: _task.cleanTitle);
+    final descController = TextEditingController(text: _task.description);
+    final formKey = GlobalKey<FormState>();
+    bool isSaving = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (dialogCtx, setDialogState) => AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppColors.cardBorder),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.edit, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text(tr.editTask, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tr.taskTitle,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: titleController,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                    decoration: InputDecoration(hintText: tr.taskTitleHint),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) return tr.taskTitleHint;
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    tr.taskDescription,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: descController,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                    maxLines: 3,
+                    decoration: InputDecoration(hintText: tr.taskDescHint),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isSaving ? null : () => Navigator.pop(ctx),
+              child: Text(tr.cancel, style: const TextStyle(color: AppColors.textSecondary)),
+            ),
+            ElevatedButton(
+              onPressed: isSaving
+                  ? null
+                  : () async {
+                      if (!formKey.currentState!.validate()) return;
+                      setDialogState(() => isSaving = true);
+                      try {
+                        final updated = await ref.read(goalRepositoryProvider).updateTask(
+                              _task.id,
+                              title: titleController.text.trim(),
+                              description: descController.text.trim(),
+                            );
+                        if (!mounted) return;
+                        setState(() {
+                          _task = _task.copyWith(
+                            title: updated.title,
+                            description: updated.description,
+                            evidencePrompt: updated.evidencePrompt,
+                          );
+                        });
+                        ref.read(todayTasksControllerProvider.notifier).refresh();
+                        ref.read(roadmapControllerProvider.notifier).refreshCurrentTasks();
+                        if (ctx.mounted) {
+                          Navigator.pop(ctx);
+                        }
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(tr.taskUpdatedSuccess), backgroundColor: AppColors.approve),
+                          );
+                        }
+                      } catch (e) {
+                        setDialogState(() => isSaving = false);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(e.toString()), backgroundColor: AppColors.reject),
+                          );
+                        }
+                      }
+                    },
+              child: isSaving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : Text(tr.save),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tr = ref.watch(translationsProvider);
@@ -201,6 +319,13 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(tr.taskDetail),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: tr.editTask,
+            onPressed: () => _showEditTaskDialog(tr),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -219,7 +344,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            _task.title,
+                            _task.cleanTitle,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -233,23 +358,43 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      '${tr.isVietnamese ? "Ngày" : "Day"} ${_task.dayNumber}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          tr.dailyTasksTitle,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        TextButton.icon(
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          onPressed: () => _showEditTaskDialog(tr),
+                          icon: const Icon(Icons.edit, size: 14, color: AppColors.primary),
+                          label: Text(
+                            tr.editTask,
+                            style: const TextStyle(fontSize: 12, color: AppColors.primary),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      _task.description,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                        height: 1.4,
+                    if (_task.description.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        _task.description,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                          height: 1.4,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),

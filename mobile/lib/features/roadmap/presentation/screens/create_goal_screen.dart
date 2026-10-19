@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/translations.dart';
+import '../../../auth/presentation/auth_controller.dart';
 import '../../../tasks_today/presentation/today_tasks_controller.dart';
 import '../goals_controller.dart';
 import '../roadmap_controller.dart';
@@ -47,6 +48,19 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final tr = ref.read(translationsProvider);
+    final authState = ref.read(authControllerProvider);
+    final userPoints = authState.user?.points ?? 1000;
+    if (userPoints < 500) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(tr.notEnoughPoints),
+          backgroundColor: AppColors.reject,
+        ),
+      );
+      return;
+    }
+
     final success = await ref.read(roadmapControllerProvider.notifier).createGoal(
           title: _titleController.text.trim(),
           category: _selectedCategory,
@@ -55,6 +69,8 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
         );
 
     if (success && mounted) {
+      await ref.read(authControllerProvider.notifier).refreshProfile();
+      if (!mounted) return;
       ref.read(todayTasksControllerProvider.notifier).loadTodayTasks();
       ref.read(goalsControllerProvider.notifier).loadGoals();
       Navigator.pop(context);
@@ -72,8 +88,11 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
   @override
   Widget build(BuildContext context) {
     final roadmapState = ref.watch(roadmapControllerProvider);
+    final authState = ref.watch(authControllerProvider);
     final tr = ref.watch(translationsProvider);
     final isGenerating = roadmapState.isGenerating;
+    final userPoints = authState.user?.points ?? 1000;
+    final hasEnoughPoints = userPoints >= 500;
 
     return Scaffold(
       appBar: AppBar(
@@ -132,7 +151,49 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 14),
+
+                // Points Cost Banner
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: hasEnoughPoints
+                        ? Colors.amber.withValues(alpha: 0.1)
+                        : AppColors.reject.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: hasEnoughPoints
+                          ? Colors.amber.withValues(alpha: 0.4)
+                          : AppColors.reject.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('🪙 ', style: TextStyle(fontSize: 20)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              tr.goalCreationCostNotice,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: hasEnoughPoints ? Colors.amber : AppColors.reject,
+                              ),
+                            ),
+                            Text(
+                              tr.currentBalance(userPoints),
+                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
 
                 // Target Goal Input
                 Text(

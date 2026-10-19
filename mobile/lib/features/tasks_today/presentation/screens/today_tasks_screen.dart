@@ -4,7 +4,9 @@ import '../../../../app.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/translations.dart';
 import '../../../auth/presentation/auth_controller.dart';
+import '../../../roadmap/data/goal_repository.dart';
 import '../../../roadmap/domain/task_model.dart';
+import '../../../roadmap/presentation/roadmap_controller.dart';
 import '../today_tasks_controller.dart';
 import 'task_detail_screen.dart';
 
@@ -32,66 +34,99 @@ class TodayTasksScreen extends ConsumerWidget {
           ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : state.selectedGoal == null && state.userGoals.isEmpty
               ? _buildEmptyState(context, ref, tr)
-              : RefreshIndicator(
-                  color: AppColors.primary,
-                  onRefresh: () => ref.read(todayTasksControllerProvider.notifier).refresh(),
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    children: [
-                      // Header Progress & Streak Summary Card
-                      _buildHeaderCard(context, state, authState, tr),
-                      const SizedBox(height: 12),
+              : Builder(
+                  builder: (context) {
+                    final now = DateTime.now();
+                    final isToday = state.selectedDate.year == now.year &&
+                        state.selectedDate.month == now.month &&
+                        state.selectedDate.day == now.day;
 
-                      // Search Icon & 7 Recent Days Chips
-                      _buildDateSelectionBar(context, ref, state, tr),
-                      const SizedBox(height: 16),
-
-                      // Section Title
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    return RefreshIndicator(
+                      color: AppColors.primary,
+                      onRefresh: () => ref.read(todayTasksControllerProvider.notifier).refresh(),
+                      child: ListView(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         children: [
-                          Text(
-                            state.dayNumber > 0
-                                ? tr.microTasksForDay.replaceAll('{day}', '${state.dayNumber}')
-                                : tr.tasksForDateTitle.replaceAll(
-                                    '{date}',
-                                    '${state.selectedDate.day.toString().padLeft(2, '0')}/${state.selectedDate.month.toString().padLeft(2, '0')}',
-                                  ),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          if (state.tasks.isNotEmpty)
-                            Text(
-                              tr.completedStats
-                                  .replaceAll('{completed}', '${state.completedTasksCount}')
-                                  .replaceAll('{total}', '${state.totalTasksCount}'),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
+                          // Header Progress & Streak Summary Card
+                          _buildHeaderCard(context, state, authState, tr),
+                          const SizedBox(height: 12),
+
+                          // Search Icon & 7 Recent Days Chips
+                          _buildDateSelectionBar(context, ref, state, tr),
+                          const SizedBox(height: 16),
+
+                          // Section Title & Add Task Button
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        isToday
+                                            ? tr.dailyTasksTitle
+                                            : tr.tasksForDateTitle.replaceAll(
+                                                '{date}',
+                                                '${state.selectedDate.day.toString().padLeft(2, '0')}/${state.selectedDate.month.toString().padLeft(2, '0')}',
+                                              ),
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (state.tasks.isNotEmpty) ...[
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '(${state.completedTasksCount}/${state.totalTasksCount})',
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
                               ),
-                            ),
+                              TextButton.icon(
+                                style: TextButton.styleFrom(
+                                  foregroundColor: AppColors.primary,
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                icon: const Icon(Icons.add_circle_outline, size: 16),
+                                label: Text(
+                                  tr.addTask,
+                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                ),
+                                onPressed: () => _showCreateTaskDialog(context, ref, state, tr),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Task List Area (Loading, Empty, or Tasks)
+                          if (state.isLoading)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 40),
+                              child: Center(
+                                child: CircularProgressIndicator(color: AppColors.primary),
+                              ),
+                            )
+                          else if (state.tasks.isEmpty)
+                            _buildNoTasksForDateCard(context, ref, tr)
+                          else
+                            ...state.tasks.map((task) => _buildCleanTaskCard(context, task, tr)),
+                          const SizedBox(height: 24),
                         ],
                       ),
-                      const SizedBox(height: 12),
-
-                      // Task List Area (Loading, Empty, or Tasks)
-                      if (state.isLoading)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 40),
-                          child: Center(
-                            child: CircularProgressIndicator(color: AppColors.primary),
-                          ),
-                        )
-                      else if (state.tasks.isEmpty)
-                        _buildNoTasksForDateCard(context, ref, tr)
-                      else
-                        ...state.tasks.map((task) => _buildCleanTaskCard(context, task, tr)),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
+                    );
+                  },
                 ),
     );
   }
@@ -136,35 +171,68 @@ class TodayTasksScreen extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  dateStr,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Text(
+                    dateStr,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.pending.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.pending.withValues(alpha: 0.4)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('🔥 ', style: TextStyle(fontSize: 12)),
-                      Text(
-                        tr.isVietnamese ? '$streak ngày chuỗi' : '$streak day streak',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.pending,
-                        ),
+                const SizedBox(width: 6),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
                       ),
-                    ],
-                  ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🪙 ', style: TextStyle(fontSize: 11)),
+                          Text(
+                            '${authState.user?.points ?? 1000}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.amber,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppColors.pending.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.pending.withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🔥 ', style: TextStyle(fontSize: 11)),
+                          Text(
+                            tr.isVietnamese ? '$streak ngày' : '$streak days',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.pending,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -303,6 +371,143 @@ class TodayTasksScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _showCreateTaskDialog(
+    BuildContext context,
+    WidgetRef ref,
+    TodayTasksState state,
+    Translations tr,
+  ) {
+    final titleController = TextEditingController();
+    final descController = TextEditingController();
+    final evidenceController = TextEditingController(
+      text: tr.isVietnamese
+          ? 'Chụp ảnh xác nhận hoàn thành nhiệm vụ này'
+          : 'Take a photo verifying completion of this task',
+    );
+    final formKey = GlobalKey<FormState>();
+    bool isSaving = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppColors.cardBorder),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.add_task, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text(
+                tr.createCustomTaskTitle,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tr.taskTitle,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: titleController,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                    decoration: InputDecoration(hintText: tr.taskTitleHint),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) return tr.taskTitleHint;
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    tr.taskDescription,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: descController,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                    maxLines: 2,
+                    decoration: InputDecoration(hintText: tr.taskDescHint),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    tr.proofRequired.replaceAll(':', ''),
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: evidenceController,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                    maxLines: 2,
+                    decoration: InputDecoration(hintText: tr.evidenceRequirementHint),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isSaving ? null : () => Navigator.pop(ctx),
+              child: Text(tr.cancel, style: const TextStyle(color: AppColors.textSecondary)),
+            ),
+            ElevatedButton(
+              onPressed: isSaving
+                  ? null
+                  : () async {
+                      if (!formKey.currentState!.validate()) return;
+                      setDialogState(() => isSaving = true);
+                      try {
+                        await ref.read(goalRepositoryProvider).createTask(
+                              goalId: state.selectedGoal?.id,
+                              dayNumber: state.dayNumber > 0 ? state.dayNumber : 1,
+                              title: titleController.text.trim(),
+                              description: descController.text.trim(),
+                              evidencePrompt: evidenceController.text.trim(),
+                            );
+                        await ref.read(todayTasksControllerProvider.notifier).refresh();
+                        await ref.read(roadmapControllerProvider.notifier).refreshCurrentTasks();
+                        if (context.mounted) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(tr.taskCreatedSuccess),
+                              backgroundColor: AppColors.approve,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        setDialogState(() => isSaving = false);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(e.toString()), backgroundColor: AppColors.reject),
+                          );
+                        }
+                      }
+                    },
+              child: isSaving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : Text(tr.save),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -456,7 +661,7 @@ class TodayTasksScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      task.title,
+                      task.cleanTitle,
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,

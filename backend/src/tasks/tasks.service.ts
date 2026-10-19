@@ -1,10 +1,17 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Task, TaskDocument } from '../database/schemas/task.schema';
 import { Goal, GoalDocument, GoalStatus } from '../database/schemas/goal.schema';
 import { Submission, SubmissionDocument } from '../database/schemas/submission.schema';
 import { QueryTasksDto } from './dto/query-tasks.dto';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TasksService {
@@ -115,6 +122,96 @@ export class TasksService {
       description: task.description,
       evidencePrompt: task.evidencePrompt,
       isCompleted: task.isCompleted,
+      latestSubmission: latestSubmission
+        ? {
+            id: latestSubmission._id.toString(),
+            imageUrl: latestSubmission.imageUrl,
+            status: latestSubmission.status,
+            upvotes: latestSubmission.upvotes,
+            downvotes: latestSubmission.downvotes,
+            createdAt: latestSubmission.createdAt,
+          }
+        : null,
+    };
+  }
+
+  async createTask(userId: string, dto: CreateTaskDto) {
+    let goal: GoalDocument | null = null;
+    if (dto.goalId) {
+      goal = await this.goalModel.findById(dto.goalId).exec();
+      if (!goal || goal.userId.toString() !== userId) {
+        throw new NotFoundException('Goal not found');
+      }
+    } else {
+      goal = await this.goalModel
+        .findOne({ userId: new Types.ObjectId(userId), status: GoalStatus.ACTIVE })
+        .sort({ createdAt: -1 })
+        .exec();
+      if (!goal) {
+        throw new BadRequestException('Bạn chưa có mục tiêu nào đang hoạt động để thêm nhiệm vụ');
+      }
+    }
+
+    const dayNumber = dto.dayNumber || goal.currentDay || 1;
+
+    const task = new this.taskModel({
+      goalId: goal._id,
+      userId: new Types.ObjectId(userId),
+      dayNumber,
+      title: dto.title.trim(),
+      description: dto.description?.trim() || '',
+      evidencePrompt: dto.evidencePrompt?.trim() || 'Chụp ảnh xác nhận hoàn thành nhiệm vụ này',
+      isCompleted: false,
+    });
+
+    const saved = await task.save();
+
+    return {
+      id: saved._id.toString(),
+      goalId: saved.goalId.toString(),
+      dayNumber: saved.dayNumber,
+      title: saved.title,
+      description: saved.description,
+      evidencePrompt: saved.evidencePrompt,
+      isCompleted: saved.isCompleted,
+      latestSubmission: null,
+    };
+  }
+
+  async updateTask(taskId: string, userId: string, dto: UpdateTaskDto) {
+    const task = await this.taskModel.findById(taskId).exec();
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+    if (task.userId.toString() !== userId) {
+      throw new ForbiddenException('You do not have access to modify this task');
+    }
+
+    if (dto.title !== undefined && dto.title.trim().length > 0) {
+      task.title = dto.title.trim();
+    }
+    if (dto.description !== undefined) {
+      task.description = dto.description.trim();
+    }
+    if (dto.evidencePrompt !== undefined && dto.evidencePrompt.trim().length > 0) {
+      task.evidencePrompt = dto.evidencePrompt.trim();
+    }
+
+    const saved = await task.save();
+
+    const latestSubmission = await this.submissionModel
+      .findOne({ taskId: saved._id })
+      .sort({ createdAt: -1 })
+      .exec();
+
+    return {
+      id: saved._id.toString(),
+      goalId: saved.goalId.toString(),
+      dayNumber: saved.dayNumber,
+      title: saved.title,
+      description: saved.description,
+      evidencePrompt: saved.evidencePrompt,
+      isCompleted: saved.isCompleted,
       latestSubmission: latestSubmission
         ? {
             id: latestSubmission._id.toString(),

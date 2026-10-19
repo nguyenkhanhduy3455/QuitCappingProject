@@ -122,4 +122,52 @@ class GoalRepository {
       throw ApiException(e.message ?? 'Failed to fetch goal roadmap');
     }
   }
+
+  Future<TaskModel> createTask({
+    String? goalId,
+    int? dayNumber,
+    required String title,
+    String? description,
+    String? evidencePrompt,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        'title': title.trim(),
+      };
+      if (goalId != null) data['goalId'] = goalId;
+      if (dayNumber != null) data['dayNumber'] = dayNumber;
+      if (description != null && description.trim().isNotEmpty) {
+        data['description'] = description.trim();
+      }
+      if (evidencePrompt != null && evidencePrompt.trim().isNotEmpty) {
+        data['evidencePrompt'] = evidencePrompt.trim();
+      }
+
+      final response = await _dio.post(ApiEndpoints.tasks, data: data);
+      return TaskModel.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (e.error is ApiException) throw e.error as ApiException;
+      throw ApiException(e.message ?? 'Failed to create task');
+    }
+  }
+
+  Future<TaskModel> updateTask(
+    String taskId, {
+    String? title,
+    String? description,
+    String? evidencePrompt,
+  }) async {
+    try {
+      final data = <String, dynamic>{};
+      if (title != null) data['title'] = title.trim();
+      if (description != null) data['description'] = description.trim();
+      if (evidencePrompt != null) data['evidencePrompt'] = evidencePrompt.trim();
+
+      final response = await _dio.patch(ApiEndpoints.taskById(taskId), data: data);
+      return TaskModel.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (e.error is ApiException) throw e.error as ApiException;
+      throw ApiException(e.message ?? 'Failed to update task');
+    }
+  }
 }

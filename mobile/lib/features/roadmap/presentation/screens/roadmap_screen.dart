@@ -298,7 +298,7 @@ class _RoadmapScreenState extends ConsumerState<RoadmapScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    task.title,
+                    task.cleanTitle,
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,

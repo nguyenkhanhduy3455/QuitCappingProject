@@ -6,6 +6,7 @@ import { GeminiAiService } from './services/gemini-ai.service';
 import { Goal, GoalSchema } from '../database/schemas/goal.schema';
 import { Task, TaskSchema } from '../database/schemas/task.schema';
 import { Submission, SubmissionSchema } from '../database/schemas/submission.schema';
+import { User, UserSchema } from '../database/schemas/user.schema';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { Submission, SubmissionSchema } from '../database/schemas/submission.sch
       { name: Goal.name, schema: GoalSchema },
       { name: Task.name, schema: TaskSchema },
       { name: Submission.name, schema: SubmissionSchema },
+      { name: User.name, schema: UserSchema },
     ]),
   ],
   controllers: [GoalsController],

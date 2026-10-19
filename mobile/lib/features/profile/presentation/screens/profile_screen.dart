@@ -90,6 +90,61 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
 
+                  // Reward Points Card
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber.withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Text('🪙', style: TextStyle(fontSize: 22)),
+                              ),
+                              const SizedBox(width: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    tr.points,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${user.points}',
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.amber,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Flexible(
+                            child: Text(
+                              tr.pointsEarnedInfo,
+                              textAlign: TextAlign.end,
+                              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
                   // Streak & Accountability Metrics Grid
                   Row(
                     children: [

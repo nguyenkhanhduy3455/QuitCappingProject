@@ -186,7 +186,7 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    widget.task.title,
+                    widget.task.cleanTitle,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

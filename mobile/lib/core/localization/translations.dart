@@ -74,6 +74,31 @@ class Translations {
   String get tasksForDateTitle => isVietnamese
       ? 'Nhiệm vụ ngày {date}'
       : 'Tasks for {date}';
+  String get dailyTasksTitle => isVietnamese ? 'Nhiệm vụ hàng ngày' : 'Daily Tasks';
+  String get editTask => isVietnamese ? 'Sửa nhiệm vụ' : 'Edit Task';
+  String get taskTitle => isVietnamese ? 'Tên nhiệm vụ' : 'Task Title';
+  String get taskTitleHint => isVietnamese ? 'Nhập tên nhiệm vụ' : 'Enter task title';
+  String get taskDescHint => isVietnamese ? 'Nhập mô tả nhiệm vụ (tùy chọn)' : 'Enter task description (optional)';
+  String get evidenceRequirementHint => isVietnamese
+      ? 'Yêu cầu bằng chứng ảnh (VD: Chụp màn hình, ảnh tập gym...)'
+      : 'Evidence photo requirement (e.g. Screenshot, gym photo...)';
+  String get save => isVietnamese ? 'Lưu' : 'Save';
+  String get taskUpdatedSuccess => isVietnamese ? 'Cập nhật nhiệm vụ thành công!' : 'Task updated successfully!';
+  String get addTask => isVietnamese ? 'Thêm nhiệm vụ' : 'Add Task';
+  String get createCustomTaskTitle => isVietnamese ? 'Thêm nhiệm vụ cho ngày' : 'Add Task for Date';
+  String get taskCreatedSuccess => isVietnamese ? 'Đã thêm nhiệm vụ mới!' : 'Task created successfully!';
+  String get points => isVietnamese ? 'Điểm thưởng' : 'Reward Points';
+  String pointsCount(int count) => isVietnamese ? '$count điểm' : '$count pts';
+  String get goalCreationCostNotice => isVietnamese
+      ? 'Tạo mục tiêu tiêu hao 500 điểm'
+      : 'Creating a goal costs 500 points';
+  String get notEnoughPoints => isVietnamese
+      ? 'Bạn không đủ 500 điểm để tạo mục tiêu'
+      : 'You do not have enough 500 points to create a goal';
+  String currentBalance(int points) => isVietnamese ? 'Số dư: $points điểm' : 'Balance: $points pts';
+  String get pointsEarnedInfo => isVietnamese
+      ? 'Nộp bằng chứng: +10đ • Duyệt: +10đ • Chấm bài: +5đ'
+      : 'Proof: +10pts • Approved: +10pts • Review: +5pts';
 
   // Tab 2: Goals Management
   String get yourGoals => isVietnamese ? 'Danh sách mục tiêu' : 'Your Goals';

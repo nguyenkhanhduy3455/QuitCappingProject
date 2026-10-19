@@ -142,6 +142,8 @@ export class ReviewsService {
     this.checkAndResetQuota(reviewer);
     reviewer.dailyReviewsDone = (reviewer.dailyReviewsDone || 0) + 1;
     reviewer.lastReviewDate = new Date();
+    // Reward: +5 points for reviewing another peer's submission
+    reviewer.points = (reviewer.points ?? 1000) + 5;
     await reviewer.save();
 
     // 7. Update Submission votes and reviewed list
@@ -160,6 +162,13 @@ export class ReviewsService {
     if (submission.upvotes >= 3) {
       submission.status = SubmissionStatus.APPROVED;
       resolutionStatus = SubmissionStatus.APPROVED;
+
+      // Reward: +10 points for submission owner when approved by community
+      const author = await this.userModel.findById(submission.userId).exec();
+      if (author) {
+        author.points = (author.points ?? 1000) + 10;
+        await author.save();
+      }
 
       // Mark associated task as complete
       const task = await this.taskModel.findById(submission.taskId).exec();

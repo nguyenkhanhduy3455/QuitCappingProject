@@ -59,6 +59,7 @@ Current Skill Level: "${currentSkillLevel}"
 Target Duration: ${duration} days.
 
 Generate a comprehensive roadmap containing 3 to 4 daily micro-tasks for EACH day from Day 1 to Day ${duration}.
+IMPORTANT: Do NOT prefix task titles with 'Day X:' or 'Ngày X:'. Provide only the concise, punchy action title itself (e.g. 'Setup Dev Environment', not 'Day 1: Setup Dev Environment').
 CRITICAL ANTI-CHEAT REQUIREMENT:
 Each micro-task MUST have a concrete, unambiguous 'evidencePrompt' describing the exact photo proof the user must capture with their phone camera to prove they actually did the task without cheating or procrastinating (e.g. 'Photo of stopwatch showing 30 mins elapsed next to your open notebook page', 'Photo of your IDE showing the passing test runner output', 'Photo of your workout gear next to today's sweat towel and gym log').
 
@@ -141,7 +142,7 @@ Return a JSON array of task objects matching the schema.`;
         const tmpl = taskTemplates[t];
         tasks.push({
           dayNumber: day,
-          title: `Day ${day}: ${tmpl.titleSuffix}`,
+          title: tmpl.titleSuffix,
           description: `${tmpl.desc} Focus on consistency and zero excuses.`,
           evidencePrompt: tmpl.evidence,
         });

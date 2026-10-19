@@ -82,6 +82,10 @@ export class SubmissionsService {
 
     const savedSubmission = await submission.save();
 
+    // Reward: +10 points for completing a task with photo evidence
+    user.points = (user.points ?? 1000) + 10;
+    await user.save();
+
     const reviewsNeeded = Math.max(0, 5 - dailyReviewsDone);
 
     return {

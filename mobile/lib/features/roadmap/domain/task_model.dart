@@ -62,4 +62,28 @@ class TaskModel {
           : null,
     );
   }
+
+  String get cleanTitle => title.replaceAll(RegExp(r'^(Day|Ngày)\s*\d+[\s:\-–—]+', caseSensitive: false), '').trim();
+
+  TaskModel copyWith({
+    String? id,
+    String? goalId,
+    int? dayNumber,
+    String? title,
+    String? description,
+    String? evidencePrompt,
+    bool? isCompleted,
+    TaskSubmissionSummary? latestSubmission,
+  }) {
+    return TaskModel(
+      id: id ?? this.id,
+      goalId: goalId ?? this.goalId,
+      dayNumber: dayNumber ?? this.dayNumber,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      evidencePrompt: evidencePrompt ?? this.evidencePrompt,
+      isCompleted: isCompleted ?? this.isCompleted,
+      latestSubmission: latestSubmission ?? this.latestSubmission,
+    );
+  }
 }

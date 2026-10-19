@@ -1,9 +1,16 @@
-import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Goal, GoalDocument, GoalStatus } from '../database/schemas/goal.schema';
 import { Task, TaskDocument } from '../database/schemas/task.schema';
 import { Submission, SubmissionDocument } from '../database/schemas/submission.schema';
+import { User, UserDocument } from '../database/schemas/user.schema';
 import { GeminiAiService } from './services/gemini-ai.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
 
@@ -15,11 +22,26 @@ export class GoalsService {
     @InjectModel(Goal.name) private readonly goalModel: Model<GoalDocument>,
     @InjectModel(Task.name) private readonly taskModel: Model<TaskDocument>,
     @InjectModel(Submission.name) private readonly submissionModel: Model<SubmissionDocument>,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private readonly geminiAiService: GeminiAiService,
   ) {}
 
   async createGoal(userId: string, createGoalDto: CreateGoalDto) {
     const durationDays = createGoalDto.durationDays || 30;
+
+    // 0. Point cost rule: Creating a goal costs 500 points
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const currentPoints = user.points ?? 1000;
+    if (currentPoints < 500) {
+      throw new BadRequestException(
+        `Bạn không đủ điểm để tạo mục tiêu (cần 500 điểm, hiện có ${currentPoints} điểm). Hãy hoàn thành các nhiệm vụ hoặc tham gia đánh giá chéo để tích lũy thêm điểm!`,
+      );
+    }
+    user.points = currentPoints - 500;
+    await user.save();
 
     // 1. Create Goal entity
     const goal = new this.goalModel({

@@ -28,6 +28,9 @@ export class User {
   @Prop({ default: 0 })
   streakCount: number;
 
+  @Prop({ default: 1000 })
+  points: number;
+
   createdAt: Date;
   updatedAt: Date;
 }

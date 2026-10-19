@@ -6,6 +6,7 @@ class UserModel {
   final int dailyReviewsDone;
   final int streakCount;
   final bool quotaReached;
+  final int points;
 
   UserModel({
     required this.id,
@@ -15,6 +16,7 @@ class UserModel {
     required this.dailyReviewsDone,
     required this.streakCount,
     required this.quotaReached,
+    this.points = 1000,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class UserModel {
       dailyReviewsDone: json['dailyReviewsDone'] ?? 0,
       streakCount: json['streakCount'] ?? 0,
       quotaReached: json['quotaReached'] ?? ((json['dailyReviewsDone'] ?? 0) >= 5),
+      points: json['points'] ?? 1000,
     );
   }
 
@@ -38,6 +41,7 @@ class UserModel {
       'dailyReviewsDone': dailyReviewsDone,
       'streakCount': streakCount,
       'quotaReached': quotaReached,
+      'points': points,
     };
   }
 
@@ -49,6 +53,7 @@ class UserModel {
     int? dailyReviewsDone,
     int? streakCount,
     bool? quotaReached,
+    int? points,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -58,6 +63,7 @@ class UserModel {
       dailyReviewsDone: dailyReviewsDone ?? this.dailyReviewsDone,
       streakCount: streakCount ?? this.streakCount,
       quotaReached: quotaReached ?? this.quotaReached,
+      points: points ?? this.points,
     );
   }
 }

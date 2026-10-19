@@ -16,6 +16,7 @@ class ApiEndpoints {
   static String goalRoadmap(String goalId) => '/goals/$goalId/roadmap';
 
   // Tasks
+  static const String tasks = '/tasks';
   static const String dailyTasks = '/tasks/daily';
   static String taskById(String taskId) => '/tasks/$taskId';
 

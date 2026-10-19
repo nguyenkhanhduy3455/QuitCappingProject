@@ -37,6 +37,7 @@ export class AuthService {
       dailyReviewsDone: 0,
       lastReviewDate: null,
       streakCount: 0,
+      points: 1000,
     });
 
     const savedUser = await createdUser.save();
@@ -99,6 +100,7 @@ export class AuthService {
       dailyReviewsDone: user.dailyReviewsDone,
       lastReviewDate: user.lastReviewDate,
       streakCount: user.streakCount,
+      points: user.points ?? 1000,
       quotaReached: (user.dailyReviewsDone || 0) >= 5,
     };
   }
