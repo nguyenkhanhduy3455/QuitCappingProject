@@ -74,19 +74,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       // App Brand Logo / Symbol
                       Center(
-                        child: Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.primary, width: 2),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              '⚡',
-                              style: TextStyle(fontSize: 34),
-                            ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.asset(
+                            'assets/images/app_logo.png',
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
