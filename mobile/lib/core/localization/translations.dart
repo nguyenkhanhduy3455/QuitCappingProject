@@ -25,6 +25,9 @@ class Translations {
   String get profile => isVietnamese ? 'Cá nhân' : 'Profile';
   String get settings => isVietnamese ? 'Cài đặt' : 'Settings';
   String get languageTitle => isVietnamese ? 'Ngôn ngữ' : 'Language';
+  String get themeTitle => isVietnamese ? 'Giao diện' : 'Theme';
+  String get darkTheme => isVietnamese ? 'Tối' : 'Dark';
+  String get lightTheme => isVietnamese ? 'Sáng' : 'Light';
   String get cancel => isVietnamese ? 'Hủy' : 'Cancel';
   String get confirm => isVietnamese ? 'Xác nhận' : 'Confirm';
   String get logOut => isVietnamese ? 'Đăng xuất' : 'Log Out';

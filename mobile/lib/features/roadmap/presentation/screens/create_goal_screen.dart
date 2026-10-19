@@ -131,7 +131,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                           children: [
                             Text(
                               tr.poweredByGemini,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.textPrimary,
@@ -140,7 +140,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                             const SizedBox(height: 3),
                             Text(
                               tr.geminiDesc,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textSecondary,
                               ),
@@ -185,7 +185,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                             ),
                             Text(
                               tr.currentBalance(userPoints),
-                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -198,12 +198,12 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                 // Target Goal Input
                 Text(
                   tr.targetGoalQuestion,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _titleController,
-                  style: const TextStyle(color: AppColors.textPrimary),
+                  style: TextStyle(color: AppColors.textPrimary),
                   decoration: InputDecoration(
                     hintText: tr.targetGoalHint,
                   ),
@@ -217,7 +217,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                 // Category Selection
                 Text(
                   tr.category,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -245,7 +245,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                 // Current Skill Level
                 Text(
                   tr.currentSkillLevel,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 8),
                 SegmentedButton<String>(
@@ -276,7 +276,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                 // Target Duration (Days)
                 Text(
                   tr.targetDuration,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 8),
                 Row(

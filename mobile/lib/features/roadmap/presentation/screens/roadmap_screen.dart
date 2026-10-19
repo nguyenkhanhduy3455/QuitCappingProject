@@ -93,7 +93,7 @@ class _RoadmapScreenState extends ConsumerState<RoadmapScreen> {
             const SizedBox(height: 24),
             Text(
               tr.noActiveRoadmap,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
@@ -103,7 +103,7 @@ class _RoadmapScreenState extends ConsumerState<RoadmapScreen> {
             Text(
               tr.noActiveRoadmapDesc,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 28),
             ElevatedButton.icon(
@@ -168,7 +168,7 @@ class _RoadmapScreenState extends ConsumerState<RoadmapScreen> {
                           tr.dayXOfY
                               .replaceAll('{x}', '${state.selectedDay}')
                               .replaceAll('{y}', '${goal.durationDays}'),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: AppColors.textSecondary,
@@ -179,7 +179,7 @@ class _RoadmapScreenState extends ConsumerState<RoadmapScreen> {
                     const SizedBox(height: 8),
                     Text(
                       goal.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -247,7 +247,7 @@ class _RoadmapScreenState extends ConsumerState<RoadmapScreen> {
                   children: [
                     Text(
                       tr.microTasksForDay.replaceAll('{day}', '${state.selectedDay}'),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -257,13 +257,13 @@ class _RoadmapScreenState extends ConsumerState<RoadmapScreen> {
                       tr.completedStats
                           .replaceAll('{completed}', '${state.tasks.where((t) => t.isCompleted).length}')
                           .replaceAll('{total}', '${state.tasks.length}'),
-                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 if (state.tasks.isEmpty && !state.isLoading)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.symmetric(vertical: 32),
                     child: Center(
                       child: Text(
@@ -314,7 +314,7 @@ class _RoadmapScreenState extends ConsumerState<RoadmapScreen> {
             const SizedBox(height: 6),
             Text(
               task.description,
-              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.3),
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.3),
             ),
             const SizedBox(height: 12),
 
@@ -334,7 +334,7 @@ class _RoadmapScreenState extends ConsumerState<RoadmapScreen> {
                   Expanded(
                     child: Text(
                       '${tr.proofRequired}${task.evidencePrompt}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
@@ -458,7 +458,7 @@ class _RoadmapScreenState extends ConsumerState<RoadmapScreen> {
         ),
         child: Text(
           tr.pendingProofBadge,
-          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
         ),
       );
     }

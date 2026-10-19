@@ -147,7 +147,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.cardBorder),
+          side: BorderSide(color: AppColors.cardBorder),
         ),
         titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
         contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
@@ -165,7 +165,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             const SizedBox(height: 12),
             Text(
               tr.taskCompletedCelebrationTitle,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
               textAlign: TextAlign.center,
             ),
           ],
@@ -198,7 +198,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             const SizedBox(height: 10),
             Text(
               tr.taskPointsEarnedNotice,
-              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 14),
@@ -223,7 +223,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                       Expanded(
                         child: Text(
                           result.isUnlockedInQueue ? tr.proofInQueueTitle : tr.giveToGetLockedTitle,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
@@ -235,7 +235,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   const SizedBox(height: 6),
                   Text(
                     result.message,
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                   ),
                 ],
               ),
@@ -250,7 +250,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                     tr.reviewsTodayFormat
                         .replaceAll('{done}', '${result.dailyReviewsDone}')
                         .replaceAll('{target}', '5'),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textSecondary,
@@ -292,7 +292,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: AppColors.cardBorder),
+            side: BorderSide(color: AppColors.cardBorder),
           ),
           title: Row(
             children: [
@@ -310,12 +310,12 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 children: [
                   Text(
                     tr.taskTitle,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: titleController,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(hintText: tr.taskTitleHint),
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) return tr.taskTitleHint;
@@ -325,12 +325,12 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   const SizedBox(height: 14),
                   Text(
                     tr.taskDescription,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: descController,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: AppColors.textPrimary),
                     maxLines: 3,
                     decoration: InputDecoration(hintText: tr.taskDescHint),
                   ),
@@ -341,7 +341,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           actions: [
             TextButton(
               onPressed: isSaving ? null : () => Navigator.pop(ctx),
-              child: Text(tr.cancel, style: const TextStyle(color: AppColors.textSecondary)),
+              child: Text(tr.cancel, style: TextStyle(color: AppColors.textSecondary)),
             ),
             ElevatedButton(
               onPressed: isSaving
@@ -403,7 +403,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.cardBorder),
+          side: BorderSide(color: AppColors.cardBorder),
         ),
         title: Row(
           children: [
@@ -414,12 +414,12 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         ),
         content: Text(
           tr.confirmDeleteTaskMessage,
-          style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+          style: TextStyle(fontSize: 14, color: AppColors.textPrimary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(tr.cancel, style: const TextStyle(color: AppColors.textSecondary)),
+            child: Text(tr.cancel, style: TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -591,7 +591,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                       const SizedBox(height: 10),
                       Text(
                         _task.description,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
                           height: 1.4,
@@ -633,7 +633,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   const SizedBox(height: 8),
                   Text(
                     _task.evidencePrompt,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
@@ -649,7 +649,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             if (submission != null) ...[
               Text(
                 tr.submittedEvidence,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -668,11 +668,11 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                     ? Image.network(
                         submission.imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => const Center(
+                        errorBuilder: (context, error, stackTrace) => Center(
                           child: Icon(Icons.broken_image, size: 48, color: AppColors.textSecondary),
                         ),
                       )
-                    : const Center(
+                    : Center(
                         child: Icon(Icons.image, size: 48, color: AppColors.textSecondary),
                       ),
               ),
@@ -685,7 +685,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             if (!_task.isCompleted && (submission == null || submission.status == 'rejected')) ...[
               Text(
                 tr.submitEvidenceNow,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -742,11 +742,11 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.add_a_photo_outlined, size: 40, color: AppColors.textSecondary),
+                                Icon(Icons.add_a_photo_outlined, size: 40, color: AppColors.textSecondary),
                                 const SizedBox(height: 8),
                                 Text(
                                   tr.noPhotoSelected,
-                                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                                 ),
                               ],
                             ),
@@ -761,7 +761,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.textPrimary,
-                        side: const BorderSide(color: AppColors.cardBorder),
+                        side: BorderSide(color: AppColors.cardBorder),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
@@ -775,7 +775,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.textPrimary,
-                        side: const BorderSide(color: AppColors.cardBorder),
+                        side: BorderSide(color: AppColors.cardBorder),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
@@ -790,10 +790,10 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               Center(
                 child: TextButton.icon(
                   onPressed: _useSampleProof,
-                  icon: const Icon(Icons.image, size: 16, color: AppColors.textSecondary),
+                  icon: Icon(Icons.image, size: 16, color: AppColors.textSecondary),
                   label: Text(
                     tr.demoPhoto,
-                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
                   ),
                 ),
               ),
@@ -961,7 +961,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         ),
         child: Text(
           tr.pendingProofBadge,
-          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
         ),
       );
     }

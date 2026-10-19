@@ -81,7 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Text(
                         tr.appName,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.w900,
                           color: AppColors.textPrimary,
@@ -92,7 +92,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Text(
                         tr.appTagline,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           color: AppColors.textSecondary,
                         ),
@@ -103,10 +103,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        style: const TextStyle(color: AppColors.textPrimary),
+                        style: TextStyle(color: AppColors.textPrimary),
                         decoration: InputDecoration(
                           labelText: tr.email,
-                          prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textSecondary),
+                          prefixIcon: Icon(Icons.email_outlined, color: AppColors.textSecondary),
                         ),
                         validator: (val) {
                           if (val == null || val.trim().isEmpty) return tr.enterEmailPrompt;
@@ -120,10 +120,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
-                        style: const TextStyle(color: AppColors.textPrimary),
+                        style: TextStyle(color: AppColors.textPrimary),
                         decoration: InputDecoration(
                           labelText: tr.password,
-                          prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textSecondary),
+                          prefixIcon: Icon(Icons.lock_outline, color: AppColors.textSecondary),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -172,7 +172,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         children: [
                           Text(
                             tr.dontHaveAccount,
-                            style: const TextStyle(color: AppColors.textSecondary),
+                            style: TextStyle(color: AppColors.textSecondary),
                           ),
                           GestureDetector(
                             onTap: () {
@@ -196,12 +196,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       // Divider
                       Row(
                         children: [
-                          const Expanded(child: Divider(color: AppColors.cardBorder)),
+                          Expanded(child: Divider(color: AppColors.cardBorder)),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
                               tr.orDivider,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -209,7 +209,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ),
                           ),
-                          const Expanded(child: Divider(color: AppColors.cardBorder)),
+                          Expanded(child: Divider(color: AppColors.cardBorder)),
                         ],
                       ),
                       const SizedBox(height: 20),
@@ -225,7 +225,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               },
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                          side: const BorderSide(color: AppColors.cardBorder, width: 1.5),
+                          side: BorderSide(color: AppColors.cardBorder, width: 1.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -243,7 +243,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 children: [
                                   Text(
                                     tr.continueAsGuest,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.textPrimary,
@@ -252,7 +252,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   const SizedBox(height: 2),
                                   Text(
                                     tr.guestModeDesc,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11,
                                       color: AppColors.textSecondary,
                                     ),

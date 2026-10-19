@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/constants/app_colors.dart';
 import 'core/localization/translations.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/app_theme_mode.dart';
 import 'features/auth/presentation/auth_controller.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/profile/presentation/screens/profile_screen.dart';
@@ -18,11 +19,16 @@ class QuitCappingApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authControllerProvider);
+    final themeSetting = ref.watch(appThemeModeProvider);
+    AppColors.setIsDark(themeSetting == AppThemeSetting.dark);
 
     return MaterialApp(
+      key: ValueKey(themeSetting),
       title: 'QuitCapping',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeSetting.themeMode,
       home: _resolveHomeScreen(authState),
     );
   }
@@ -65,7 +71,7 @@ class MainNavigationShell extends ConsumerWidget {
         children: _screens,
       ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(top: BorderSide(color: AppColors.cardBorder, width: 1)),
         ),
         child: BottomNavigationBar(

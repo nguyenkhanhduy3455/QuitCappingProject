@@ -174,7 +174,7 @@ class SwipeCardState extends ConsumerState<SwipeCard> with SingleTickerProviderS
                             fit: BoxFit.cover,
                             errorBuilder: (ctx, err, stack) => Container(
                               color: AppColors.surfaceVariant,
-                              child: const Center(
+                              child: Center(
                                 child: Icon(Icons.broken_image, size: 48, color: AppColors.textSecondary),
                               ),
                             ),
@@ -238,7 +238,7 @@ class SwipeCardState extends ConsumerState<SwipeCard> with SingleTickerProviderS
                           children: [
                             Text(
                               widget.card.cleanTaskTitle,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.textPrimary,
@@ -249,7 +249,7 @@ class SwipeCardState extends ConsumerState<SwipeCard> with SingleTickerProviderS
                             const SizedBox(height: 4),
                             Text(
                               widget.card.taskDescription,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textSecondary,
                               ),
@@ -273,7 +273,7 @@ class SwipeCardState extends ConsumerState<SwipeCard> with SingleTickerProviderS
                                   Expanded(
                                     child: Text(
                                       '${tr.verifyCriteriaPrefix}${widget.card.evidencePrompt}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                         color: AppColors.textPrimary,

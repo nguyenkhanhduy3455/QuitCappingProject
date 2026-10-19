@@ -115,7 +115,7 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.cardBorder),
+          side: BorderSide(color: AppColors.cardBorder),
         ),
         titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
         contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
@@ -133,7 +133,7 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
             const SizedBox(height: 12),
             Text(
               tr.taskCompletedCelebrationTitle,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
               textAlign: TextAlign.center,
             ),
           ],
@@ -166,7 +166,7 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
             const SizedBox(height: 10),
             Text(
               tr.taskPointsEarnedNotice,
-              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 14),
@@ -191,7 +191,7 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
                       Expanded(
                         child: Text(
                           result.isUnlockedInQueue ? tr.proofInQueueTitle : tr.giveToGetLockedTitle,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
@@ -203,7 +203,7 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
                   const SizedBox(height: 6),
                   Text(
                     result.message,
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                   ),
                 ],
               ),
@@ -218,7 +218,7 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
                     tr.reviewsTodayFormat
                         .replaceAll('{done}', '${result.dailyReviewsDone}')
                         .replaceAll('{target}', '5'),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textSecondary,
@@ -256,7 +256,7 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: AppColors.cardBorder),
+        side: BorderSide(color: AppColors.cardBorder),
       ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -272,7 +272,7 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
                 Expanded(
                   child: Text(
                     widget.task.cleanTitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
@@ -282,12 +282,12 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close, color: AppColors.textSecondary),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
             ),
-            const Divider(color: AppColors.cardBorder),
+            Divider(color: AppColors.cardBorder),
             const SizedBox(height: 8),
 
             // Concrete Evidence Prompt Banner
@@ -319,7 +319,7 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
                   const SizedBox(height: 6),
                   Text(
                     widget.task.evidencePrompt,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
@@ -380,11 +380,11 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.camera_alt_outlined, size: 40, color: AppColors.textSecondary),
+                              Icon(Icons.camera_alt_outlined, size: 40, color: AppColors.textSecondary),
                               const SizedBox(height: 8),
                               Text(
                                 tr.noPhotoSelected,
-                                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                               ),
                             ],
                           ),
@@ -399,7 +399,7 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.textPrimary,
-                      side: const BorderSide(color: AppColors.cardBorder),
+                      side: BorderSide(color: AppColors.cardBorder),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
@@ -413,7 +413,7 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.textPrimary,
-                      side: const BorderSide(color: AppColors.cardBorder),
+                      side: BorderSide(color: AppColors.cardBorder),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
@@ -429,10 +429,10 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
             Center(
               child: TextButton.icon(
                 onPressed: _useSampleProof,
-                icon: const Icon(Icons.image, size: 16, color: AppColors.textSecondary),
+                icon: Icon(Icons.image, size: 16, color: AppColors.textSecondary),
                 label: Text(
                   tr.demoPhoto,
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
                 ),
               ),
             ),

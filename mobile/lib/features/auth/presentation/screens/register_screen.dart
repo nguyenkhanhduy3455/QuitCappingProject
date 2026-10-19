@@ -77,7 +77,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 children: [
                   Text(
                     tr.joinQuitCapping,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w900,
                       color: AppColors.textPrimary,
@@ -86,7 +86,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   const SizedBox(height: 6),
                   Text(
                     tr.joinSubtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
                     ),
@@ -96,10 +96,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   // Display Name
                   TextFormField(
                     controller: _nameController,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: tr.displayName,
-                      prefixIcon: const Icon(Icons.person_outline, color: AppColors.textSecondary),
+                      prefixIcon: Icon(Icons.person_outline, color: AppColors.textSecondary),
                     ),
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) return tr.enterNamePrompt;
@@ -112,10 +112,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: tr.email,
-                      prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textSecondary),
+                      prefixIcon: Icon(Icons.email_outlined, color: AppColors.textSecondary),
                     ),
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) return tr.enterEmailPrompt;
@@ -129,10 +129,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: tr.password,
-                      prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textSecondary),
+                      prefixIcon: Icon(Icons.lock_outline, color: AppColors.textSecondary),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -181,7 +181,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     children: [
                       Text(
                         tr.alreadyHaveAccount,
-                        style: const TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: AppColors.textSecondary),
                       ),
                       GestureDetector(
                         onTap: () => Navigator.pop(context),

@@ -70,7 +70,7 @@ class TodayTasksScreen extends ConsumerWidget {
                                                 '{date}',
                                                 '${state.selectedDate.day.toString().padLeft(2, '0')}/${state.selectedDate.month.toString().padLeft(2, '0')}',
                                               ),
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                           color: AppColors.textPrimary,
@@ -82,7 +82,7 @@ class TodayTasksScreen extends ConsumerWidget {
                                       const SizedBox(width: 8),
                                       Text(
                                         '(${state.completedTasksCount}/${state.totalTasksCount})',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
                                           color: AppColors.textSecondary,
@@ -174,7 +174,7 @@ class TodayTasksScreen extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     dateStr,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       color: AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
@@ -242,7 +242,7 @@ class TodayTasksScreen extends ConsumerWidget {
               children: [
                 Text(
                   subtitleText,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
@@ -302,7 +302,7 @@ class TodayTasksScreen extends ConsumerWidget {
             backgroundColor: AppColors.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
-              side: const BorderSide(color: AppColors.cardBorder),
+              side: BorderSide(color: AppColors.cardBorder),
             ),
             padding: const EdgeInsets.all(10),
           ),
@@ -392,7 +392,7 @@ class TodayTasksScreen extends ConsumerWidget {
           backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: AppColors.cardBorder),
+            side: BorderSide(color: AppColors.cardBorder),
           ),
           title: Row(
             children: [
@@ -413,12 +413,12 @@ class TodayTasksScreen extends ConsumerWidget {
                 children: [
                   Text(
                     tr.taskTitle,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: titleController,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(hintText: tr.taskTitleHint),
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) return tr.taskTitleHint;
@@ -428,12 +428,12 @@ class TodayTasksScreen extends ConsumerWidget {
                   const SizedBox(height: 14),
                   Text(
                     tr.taskDescription,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: descController,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: AppColors.textPrimary),
                     maxLines: 3,
                     decoration: InputDecoration(hintText: tr.taskDescHint),
                   ),
@@ -444,7 +444,7 @@ class TodayTasksScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: isSaving ? null : () => Navigator.pop(ctx),
-              child: Text(tr.cancel, style: const TextStyle(color: AppColors.textSecondary)),
+              child: Text(tr.cancel, style: TextStyle(color: AppColors.textSecondary)),
             ),
             ElevatedButton(
               onPressed: isSaving
@@ -513,7 +513,7 @@ class TodayTasksScreen extends ConsumerWidget {
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.cardBorder),
+          side: BorderSide(color: AppColors.cardBorder),
         ),
         title: Row(
           children: [
@@ -528,7 +528,7 @@ class TodayTasksScreen extends ConsumerWidget {
           children: [
             Text(
               tr.enterDatePrompt,
-              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -547,7 +547,7 @@ class TodayTasksScreen extends ConsumerWidget {
                       builder: (context, child) {
                         return Theme(
                           data: Theme.of(context).copyWith(
-                            colorScheme: const ColorScheme.dark(
+                            colorScheme: ColorScheme.dark(
                               primary: AppColors.primary,
                               surface: AppColors.surface,
                             ),
@@ -569,7 +569,7 @@ class TodayTasksScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(tr.cancel, style: const TextStyle(color: AppColors.textSecondary)),
+            child: Text(tr.cancel, style: TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -613,7 +613,7 @@ class TodayTasksScreen extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 10),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: AppColors.cardBorder),
+        side: BorderSide(color: AppColors.cardBorder),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
@@ -717,7 +717,7 @@ class TodayTasksScreen extends ConsumerWidget {
         ),
         child: Text(
           tr.pendingProofBadge,
-          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
         ),
       );
     }
@@ -796,7 +796,7 @@ class TodayTasksScreen extends ConsumerWidget {
           Text(
             tr.noTasksForThisDay,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
@@ -806,7 +806,7 @@ class TodayTasksScreen extends ConsumerWidget {
           Text(
             tr.noTasksForThisDayDesc,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               color: AppColors.textSecondary,
               height: 1.4,
@@ -853,7 +853,7 @@ class TodayTasksScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             Text(
               tr.noTasksToday,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
@@ -863,7 +863,7 @@ class TodayTasksScreen extends ConsumerWidget {
             Text(
               tr.noTasksTodayDesc,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
                 height: 1.4,

@@ -101,7 +101,7 @@ class _ReviewDetailScreenState extends ConsumerState<ReviewDetailScreen> {
                       fit: BoxFit.cover,
                       errorBuilder: (ctx, err, stack) => Container(
                         color: AppColors.surfaceVariant,
-                        child: const Center(
+                        child: Center(
                           child: Icon(Icons.broken_image, size: 54, color: AppColors.textSecondary),
                         ),
                       ),
@@ -201,11 +201,11 @@ class _ReviewDetailScreenState extends ConsumerState<ReviewDetailScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.how_to_reg, size: 13, color: AppColors.textSecondary),
+                              Icon(Icons.how_to_reg, size: 13, color: AppColors.textSecondary),
                               const SizedBox(width: 4),
                               Text(
                                 tr.reviewedCount(card.totalReviews),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.textSecondary,
@@ -218,7 +218,7 @@ class _ReviewDetailScreenState extends ConsumerState<ReviewDetailScreen> {
                           const SizedBox(width: 8),
                           Text(
                             '👍 ${card.upvotes}   👎 ${card.downvotes}',
-                            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
                           ),
                         ],
                       ],
@@ -229,7 +229,7 @@ class _ReviewDetailScreenState extends ConsumerState<ReviewDetailScreen> {
                     // Task Title
                     Text(
                       card.cleanTaskTitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -240,7 +240,7 @@ class _ReviewDetailScreenState extends ConsumerState<ReviewDetailScreen> {
                       const SizedBox(height: 8),
                       Text(
                         card.taskDescription,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           color: AppColors.textSecondary,
                           height: 1.4,
@@ -266,7 +266,7 @@ class _ReviewDetailScreenState extends ConsumerState<ReviewDetailScreen> {
                           Expanded(
                             child: Text(
                               '${tr.verifyCriteriaPrefix}${card.evidencePrompt}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textPrimary,
@@ -299,7 +299,7 @@ class _ReviewDetailScreenState extends ConsumerState<ReviewDetailScreen> {
                       Expanded(
                         child: Text(
                           tr.cannotReviewOwnDetail,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textPrimary,
                             height: 1.35,
@@ -315,7 +315,7 @@ class _ReviewDetailScreenState extends ConsumerState<ReviewDetailScreen> {
                   children: [
                     Text(
                       tr.reviewActionTitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -326,7 +326,7 @@ class _ReviewDetailScreenState extends ConsumerState<ReviewDetailScreen> {
                       tr.isVietnamese
                           ? 'Đánh giá công tâm giúp cộng đồng không bốc phét (+5 điểm thưởng)'
                           : 'Fair review keeps the community honest (+5 pts reward)',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                     ),
                     const SizedBox(height: 14),
                     Row(

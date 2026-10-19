@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_language.dart';
 import '../../../../core/localization/translations.dart';
+import '../../../../core/theme/app_theme_mode.dart';
 import '../../../auth/presentation/auth_controller.dart';
 import '../../../roadmap/presentation/roadmap_controller.dart';
 
@@ -17,6 +18,7 @@ class ProfileScreen extends ConsumerWidget {
     final activeGoal = roadmapState.activeGoal;
     final tr = ref.watch(translationsProvider);
     final currentLang = ref.watch(appLanguageProvider);
+    final currentTheme = ref.watch(appThemeModeProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -67,7 +69,7 @@ class ProfileScreen extends ConsumerWidget {
                               children: [
                                 Text(
                                   user.displayName,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.textPrimary,
@@ -76,7 +78,7 @@ class ProfileScreen extends ConsumerWidget {
                                 const SizedBox(height: 4),
                                 Text(
                                   user.email,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 13,
                                     color: AppColors.textSecondary,
                                   ),
@@ -133,7 +135,7 @@ class ProfileScreen extends ConsumerWidget {
                                 children: [
                                   Text(
                                     tr.points,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
                                       color: AppColors.textSecondary,
                                       fontWeight: FontWeight.w600,
@@ -156,7 +158,7 @@ class ProfileScreen extends ConsumerWidget {
                             child: Text(
                               tr.pointsEarnedInfo,
                               textAlign: TextAlign.end,
-                              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                              style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
                             ),
                           ),
                         ],
@@ -182,7 +184,7 @@ class ProfileScreen extends ConsumerWidget {
                                     const SizedBox(width: 6),
                                     Text(
                                       tr.streakTitle,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.textSecondary,
@@ -203,7 +205,7 @@ class ProfileScreen extends ConsumerWidget {
                                 const SizedBox(height: 4),
                                 Text(
                                   tr.zeroCapNotice,
-                                  style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                  style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
                                 ),
                               ],
                             ),
@@ -232,7 +234,7 @@ class ProfileScreen extends ConsumerWidget {
                                     const SizedBox(width: 6),
                                     Text(
                                       tr.quotaTitle,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.textSecondary,
@@ -255,7 +257,7 @@ class ProfileScreen extends ConsumerWidget {
                                 const SizedBox(height: 4),
                                 Text(
                                   user.dailyReviewsDone >= 5 ? tr.unlockedInQueue : tr.lockedUntil5,
-                                  style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                  style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
                                 ),
                               ],
                             ),
@@ -279,7 +281,7 @@ class ProfileScreen extends ConsumerWidget {
                               const SizedBox(width: 8),
                               Text(
                                 tr.settings,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.textPrimary,
@@ -293,11 +295,11 @@ class ProfileScreen extends ConsumerWidget {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(Icons.language, size: 18, color: AppColors.textSecondary),
+                                  Icon(Icons.language, size: 18, color: AppColors.textSecondary),
                                   const SizedBox(width: 8),
                                   Text(
                                     tr.languageTitle,
-                                    style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                                    style: TextStyle(fontSize: 14, color: AppColors.textPrimary),
                                   ),
                                 ],
                               ),
@@ -315,6 +317,60 @@ class ProfileScreen extends ConsumerWidget {
                                 selected: {currentLang},
                                 onSelectionChanged: (set) {
                                   ref.read(appLanguageProvider.notifier).setLanguage(set.first);
+                                },
+                                style: ButtonStyle(
+                                  backgroundColor: WidgetStateProperty.resolveWith((states) {
+                                    if (states.contains(WidgetState.selected)) {
+                                      return AppColors.primary.withValues(alpha: 0.25);
+                                    }
+                                    return AppColors.surfaceVariant;
+                                  }),
+                                  foregroundColor: WidgetStateProperty.resolveWith((states) {
+                                    if (states.contains(WidgetState.selected)) {
+                                      return AppColors.primary;
+                                    }
+                                    return AppColors.textSecondary;
+                                  }),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          const Divider(height: 1),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    currentTheme == AppThemeSetting.dark
+                                        ? Icons.dark_mode_outlined
+                                        : Icons.light_mode_outlined,
+                                    size: 18,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    tr.themeTitle,
+                                    style: TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                                  ),
+                                ],
+                              ),
+                              SegmentedButton<AppThemeSetting>(
+                                segments: [
+                                  ButtonSegment(
+                                    value: AppThemeSetting.dark,
+                                    label: Text('🌙 ${tr.darkTheme}'),
+                                  ),
+                                  ButtonSegment(
+                                    value: AppThemeSetting.light,
+                                    label: Text('☀️ ${tr.lightTheme}'),
+                                  ),
+                                ],
+                                selected: {currentTheme},
+                                onSelectionChanged: (set) {
+                                  ref.read(appThemeModeProvider.notifier).setThemeSetting(set.first);
                                 },
                                 style: ButtonStyle(
                                   backgroundColor: WidgetStateProperty.resolveWith((states) {
@@ -352,7 +408,7 @@ class ProfileScreen extends ConsumerWidget {
                               const SizedBox(width: 8),
                               Text(
                                 tr.currentRoadmap,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.textPrimary,
@@ -364,7 +420,7 @@ class ProfileScreen extends ConsumerWidget {
                           if (activeGoal != null) ...[
                             Text(
                               activeGoal.title,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.textPrimary,
@@ -373,7 +429,7 @@ class ProfileScreen extends ConsumerWidget {
                             const SizedBox(height: 4),
                             Text(
                               '${tr.category}: ${tr.categoryName(activeGoal.category)} • ${tr.dayXOfY.replaceAll('{x}', '${activeGoal.currentDay}').replaceAll('{y}', '${activeGoal.durationDays}')}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 color: AppColors.textSecondary,
                               ),
@@ -391,7 +447,7 @@ class ProfileScreen extends ConsumerWidget {
                           ] else ...[
                             Text(
                               tr.noActiveGoalProfile,
-                              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
                             ),
                           ],
                         ],
@@ -417,7 +473,7 @@ class ProfileScreen extends ConsumerWidget {
                             const SizedBox(width: 8),
                             Text(
                               tr.antiCheatRulesTitle,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.textPrimary,
@@ -428,7 +484,7 @@ class ProfileScreen extends ConsumerWidget {
                         const SizedBox(height: 8),
                         Text(
                           tr.antiCheatSummary,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
                             height: 1.4,
@@ -453,7 +509,7 @@ class ProfileScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(tr.cancel, style: const TextStyle(color: AppColors.textSecondary)),
+            child: Text(tr.cancel, style: TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.reject),

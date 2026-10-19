@@ -129,7 +129,7 @@ class GoalsScreen extends ConsumerWidget {
               // Title
               Text(
                 goal.title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -146,7 +146,7 @@ class GoalsScreen extends ConsumerWidget {
                         .replaceAll('{current}', '${goal.currentDay}')
                         .replaceAll('{total}', '${goal.durationDays}')
                         .replaceAll('{percent}', '${goal.percent}'),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textSecondary,
@@ -225,7 +225,7 @@ class GoalsScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             Text(
               tr.noGoalsYet,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
@@ -235,7 +235,7 @@ class GoalsScreen extends ConsumerWidget {
             Text(
               tr.noGoalsYetDesc,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
                 height: 1.4,

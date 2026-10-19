@@ -66,7 +66,7 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
                   children: [
                     Text(
                       '${tr.reviewQueueTitle} (${state.feed.length})',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -163,7 +163,7 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
                 tr.reviewsTodayFormat
                     .replaceAll('{done}', '$reviewsDone')
                     .replaceAll('{target}', '$target'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textSecondary,
@@ -190,7 +190,7 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
                 : isQuotaMet
                     ? tr.quotaUnlockedDesc
                     : tr.quotaNeededDesc(target - reviewsDone),
-            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -229,7 +229,7 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
                   child: Image.network(
                     resolvedImageUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (ctx, err, stack) => const Center(
+                    errorBuilder: (ctx, err, stack) => Center(
                       child: Icon(Icons.broken_image, size: 24, color: AppColors.textSecondary),
                     ),
                     loadingBuilder: (ctx, child, progress) {
@@ -254,7 +254,7 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
                   children: [
                     Text(
                       card.cleanTaskTitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -289,11 +289,11 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.how_to_reg, size: 12, color: AppColors.textSecondary),
+                            Icon(Icons.how_to_reg, size: 12, color: AppColors.textSecondary),
                             const SizedBox(width: 3),
                             Text(
                               tr.reviewedCount(card.totalReviews),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textSecondary,
@@ -361,16 +361,16 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.surfaceVariant,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.all_inclusive, size: 54, color: AppColors.textSecondary),
+              child: Icon(Icons.all_inclusive, size: 54, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 20),
             Text(
               tr.queueCaughtUpTitle,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
@@ -380,7 +380,7 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
             Text(
               tr.queueCaughtUpDesc,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 24),
             OutlinedButton.icon(
@@ -416,7 +416,7 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
         ),
         content: Text(
           tr.quotaMetCelebrationBody(count),
-          style: const TextStyle(color: AppColors.textPrimary, height: 1.4),
+          style: TextStyle(color: AppColors.textPrimary, height: 1.4),
         ),
         actions: [
           ElevatedButton(

@@ -27,14 +27,14 @@ class LanguageTogglePill extends ConsumerWidget {
             const SizedBox(width: 6),
             Text(
               currentLang == AppLanguage.vi ? 'VN' : 'EN',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(width: 4),
-            const Icon(Icons.sync_alt, size: 12, color: AppColors.textSecondary),
+            Icon(Icons.sync_alt, size: 12, color: AppColors.textSecondary),
           ],
         ),
       ),
