@@ -1,0 +1,22 @@
+# Node / Backend
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Flutter / Mobile
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/build/
+mobile/.packages
+mobile/.pub-cache/
+mobile/.pub/
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
