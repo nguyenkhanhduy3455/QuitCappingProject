@@ -226,6 +226,14 @@ class Translations {
   String get proofInQueueTitle => isVietnamese ? 'Bằng chứng đã vào hàng đợi!' : 'Proof In Queue!';
   String get giveToGetLockedTitle => isVietnamese ? 'Đã khóa theo luật Give-to-Get' : 'Give-to-Get Locked';
   String get gotIt => isVietnamese ? 'ĐÃ HIỂU' : 'GOT IT';
+  String get taskCompletedCelebrationTitle => isVietnamese ? '🎉 Chúc Mừng Hoàn Thành!' : '🎉 Task Completed!';
+  String get taskPointsEarnedNotice => isVietnamese
+      ? '+10 điểm đã được cộng vào tài khoản của bạn!'
+      : '+10 points added to your account!';
+  String get taskCompletedSuccessMessage => isVietnamese
+      ? 'Chúc mừng bạn đã hoàn thành nhiệm vụ! +10 điểm'
+      : 'Congratulations on completing the task! +10 points';
+  String get bonusPointsBadge => isVietnamese ? '+10 ĐIỂM THƯỞNG' : '+10 BONUS POINTS';
 
   // Peer Review & Give-to-Get
   String get communityPeerReview => isVietnamese ? 'Đánh giá Chéo Cộng đồng' : 'Community Peer Review';

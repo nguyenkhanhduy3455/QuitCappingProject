@@ -302,8 +302,8 @@ class _RoadmapScreenState extends ConsumerState<RoadmapScreen> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: task.isCompleted ? AppColors.textSecondary : AppColors.textPrimary,
-                      decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                      color: task.hasSubmittedEvidence ? AppColors.textSecondary : AppColors.textPrimary,
+                      decoration: task.hasSubmittedEvidence ? TextDecoration.lineThrough : null,
                     ),
                   ),
                 ),

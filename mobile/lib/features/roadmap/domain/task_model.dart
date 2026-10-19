@@ -65,6 +65,8 @@ class TaskModel {
 
   String get cleanTitle => title.replaceAll(RegExp(r'^(Day|Ngày)\s*\d+[\s:\-–—]+', caseSensitive: false), '').trim();
 
+  bool get hasSubmittedEvidence => latestSubmission != null || isCompleted;
+
   TaskModel copyWith({
     String? id,
     String? goalId,

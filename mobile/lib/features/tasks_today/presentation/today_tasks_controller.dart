@@ -54,7 +54,7 @@ class TodayTasksState {
     );
   }
 
-  int get completedTasksCount => tasks.where((t) => t.isCompleted).length;
+  int get completedTasksCount => tasks.where((t) => t.hasSubmittedEvidence).length;
   int get totalTasksCount => tasks.length;
   double get completionProgress =>
       totalTasksCount > 0 ? (completedTasksCount / totalTasksCount) : 0.0;

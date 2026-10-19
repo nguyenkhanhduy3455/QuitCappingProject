@@ -80,6 +80,19 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
       if (mounted) {
         Navigator.pop(context);
         _showSuccessDialog(result, tr);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(child: Text(tr.taskCompletedSuccessMessage)),
+              ],
+            ),
+            backgroundColor: AppColors.approve,
+            duration: const Duration(seconds: 4),
+          ),
+        );
       }
     } catch (e) {
       setState(() => _isSubmitting = false);
@@ -97,65 +110,137 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
   void _showSuccessDialog(SubmissionResult result, Translations tr) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           side: const BorderSide(color: AppColors.cardBorder),
         ),
-        title: Row(
+        titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+        contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+        title: Column(
           children: [
-            Icon(
-              result.isUnlockedInQueue ? Icons.check_circle : Icons.lock_clock,
-              color: result.isUnlockedInQueue ? AppColors.approve : AppColors.pending,
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.approve.withValues(alpha: 0.15),
+              ),
+              child: const Icon(Icons.celebration, color: AppColors.approve, size: 32),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(height: 12),
             Text(
-              result.isUnlockedInQueue ? tr.proofInQueueTitle : tr.giveToGetLockedTitle,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              tr.taskCompletedCelebrationTitle,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              result.message,
-              style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.amber.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
               ),
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.rate_review, size: 20, color: AppColors.primary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      tr.reviewsTodayFormat
-                          .replaceAll('{done}', '${result.dailyReviewsDone}')
-                          .replaceAll('{target}', '5'),
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
-                      ),
+                  const Text('🪙 ', style: TextStyle(fontSize: 16)),
+                  Text(
+                    tr.bonusPointsBadge,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber,
                     ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(height: 10),
+            Text(
+              tr.taskPointsEarnedNotice,
+              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.cardBorder),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        result.isUnlockedInQueue ? Icons.check_circle : Icons.lock_clock,
+                        size: 16,
+                        color: result.isUnlockedInQueue ? AppColors.approve : AppColors.pending,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          result.isUnlockedInQueue ? tr.proofInQueueTitle : tr.giveToGetLockedTitle,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    result.message,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(Icons.rate_review, size: 16, color: AppColors.primary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    tr.reviewsTodayFormat
+                        .replaceAll('{done}', '${result.dailyReviewsDone}')
+                        .replaceAll('{target}', '5'),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(tr.gotIt, style: const TextStyle(color: AppColors.primary)),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(tr.gotIt, style: const TextStyle(fontWeight: FontWeight.bold)),
+            ),
           ),
         ],
       ),

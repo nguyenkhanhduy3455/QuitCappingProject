@@ -121,7 +121,7 @@ class TodayTasksScreen extends ConsumerWidget {
                           else if (state.tasks.isEmpty)
                             _buildNoTasksForDateCard(context, ref, tr)
                           else
-                            ...state.tasks.map((task) => _buildCleanTaskCard(context, task, tr)),
+                            ...state.tasks.map((task) => _buildCleanTaskCard(context, ref, task, tr)),
                           const SizedBox(height: 24),
                         ],
                       ),
@@ -603,9 +603,12 @@ class TodayTasksScreen extends ConsumerWidget {
 
   Widget _buildCleanTaskCard(
     BuildContext context,
+    WidgetRef ref,
     TaskModel task,
     Translations tr,
   ) {
+    final hasSubmitted = task.hasSubmittedEvidence;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       shape: RoundedRectangleBorder(
@@ -614,33 +617,31 @@ class TodayTasksScreen extends ConsumerWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => TaskDetailScreen(task: task)),
           );
+          ref.read(todayTasksControllerProvider.notifier).refresh();
+          ref.read(authControllerProvider.notifier).refreshProfile();
         },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           child: Row(
             children: [
-              // Check / Status icon
+              // Check / Circular radio icon: tick xanh dù duyệt hay chưa miễn là đã submit evidence
               Icon(
-                task.isCompleted
+                hasSubmitted
                     ? Icons.check_circle
-                    : (task.latestSubmission != null
-                        ? Icons.access_time_filled
-                        : Icons.radio_button_unchecked),
-                color: task.isCompleted
+                    : Icons.radio_button_unchecked,
+                color: hasSubmitted
                     ? AppColors.approve
-                    : (task.latestSubmission != null
-                        ? AppColors.pending
-                        : AppColors.textSecondary),
+                    : AppColors.textSecondary,
                 size: 22,
               ),
               const SizedBox(width: 12),
 
-              // Title & Status Badge
+              // Title & Status Badge: gạch ngang và chữ xám khi đã nộp bằng chứng
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -650,8 +651,8 @@ class TodayTasksScreen extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: task.isCompleted ? AppColors.textSecondary : AppColors.textPrimary,
-                        decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                        color: hasSubmitted ? AppColors.textSecondary : AppColors.textPrimary,
+                        decoration: hasSubmitted ? TextDecoration.lineThrough : null,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -670,11 +671,13 @@ class TodayTasksScreen extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => TaskDetailScreen(task: task)),
                   );
+                  ref.read(todayTasksControllerProvider.notifier).refresh();
+                  ref.read(authControllerProvider.notifier).refreshProfile();
                 },
                 icon: const Icon(Icons.arrow_forward, size: 14),
                 label: Text(
