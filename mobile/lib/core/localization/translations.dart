@@ -58,6 +58,22 @@ class Translations {
   String get submittedEvidence => isVietnamese ? 'Bằng chứng đã nộp' : 'Submitted Evidence';
   String get submitEvidenceNow => isVietnamese ? 'Nộp ảnh bằng chứng' : 'Submit Photo Evidence';
   String get todayLabel => isVietnamese ? 'Hôm nay' : 'Today';
+  String get noTasksForThisDay => isVietnamese
+      ? 'Bạn không có việc cần làm vào ngày này'
+      : 'You have no tasks to do on this day';
+  String get noTasksForThisDayDesc => isVietnamese
+      ? 'Không có nhiệm vụ nào được ghi nhận cho ngày này. Hãy chọn ngày khác hoặc quay lại hôm nay.'
+      : 'No tasks recorded for this date. Select another date or return to today.';
+  String get backToToday => isVietnamese ? 'Về ngày hôm nay' : 'Back to Today';
+  String get tasksCompletedOnDate => isVietnamese
+      ? '{completed}/{total} nhiệm vụ hoàn thành'
+      : '{completed}/{total} tasks completed';
+  String get noTasksOnDate => isVietnamese
+      ? 'Không có việc cần làm'
+      : 'No tasks to do';
+  String get tasksForDateTitle => isVietnamese
+      ? 'Nhiệm vụ ngày {date}'
+      : 'Tasks for {date}';
 
   // Tab 2: Goals Management
   String get yourGoals => isVietnamese ? 'Danh sách mục tiêu' : 'Your Goals';

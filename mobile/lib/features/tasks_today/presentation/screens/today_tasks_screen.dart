@@ -51,37 +51,42 @@ class TodayTasksScreen extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            tr.microTasksForDay.replaceAll('{day}', '${state.dayNumber}'),
+                            state.dayNumber > 0
+                                ? tr.microTasksForDay.replaceAll('{day}', '${state.dayNumber}')
+                                : tr.tasksForDateTitle.replaceAll(
+                                    '{date}',
+                                    '${state.selectedDate.day.toString().padLeft(2, '0')}/${state.selectedDate.month.toString().padLeft(2, '0')}',
+                                  ),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: AppColors.textPrimary,
                             ),
                           ),
-                          Text(
-                            tr.completedStats
-                                .replaceAll('{completed}', '${state.completedTasksCount}')
-                                .replaceAll('{total}', '${state.totalTasksCount}'),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
+                          if (state.tasks.isNotEmpty)
+                            Text(
+                              tr.completedStats
+                                  .replaceAll('{completed}', '${state.completedTasksCount}')
+                                  .replaceAll('{total}', '${state.totalTasksCount}'),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
-                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
 
-                      // Clean Task List Cards (Only Title & "Mở" button)
-                      if (state.tasks.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 32),
+                      // Task List Area (Loading, Empty, or Tasks)
+                      if (state.isLoading)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
                           child: Center(
-                            child: Text(
-                              tr.noTasksToday,
-                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
-                            ),
+                            child: CircularProgressIndicator(color: AppColors.primary),
                           ),
                         )
+                      else if (state.tasks.isEmpty)
+                        _buildNoTasksForDateCard(context, ref, tr)
                       else
                         ...state.tasks.map((task) => _buildCleanTaskCard(context, task, tr)),
                       const SizedBox(height: 24),
@@ -111,6 +116,16 @@ class TodayTasksScreen extends ConsumerWidget {
             : 'Date: ${d.day}/${d.month}/${d.year}');
 
     final percent = (state.completionProgress * 100).round();
+
+    final subtitleText = isToday
+        ? tr.todayTasksSubtitle
+            .replaceAll('{completed}', '${state.completedTasksCount}')
+            .replaceAll('{total}', '${state.totalTasksCount}')
+        : (state.totalTasksCount > 0
+            ? tr.tasksCompletedOnDate
+                .replaceAll('{completed}', '${state.completedTasksCount}')
+                .replaceAll('{total}', '${state.totalTasksCount}')
+            : tr.noTasksOnDate);
 
     return Card(
       child: Padding(
@@ -158,9 +173,7 @@ class TodayTasksScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  tr.todayTasksSubtitle
-                      .replaceAll('{completed}', '${state.completedTasksCount}')
-                      .replaceAll('{total}', '${state.totalTasksCount}'),
+                  subtitleText,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -556,6 +569,73 @@ class TodayTasksScreen extends ConsumerWidget {
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  Widget _buildNoTasksForDateCard(
+    BuildContext context,
+    WidgetRef ref,
+    Translations tr,
+  ) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.event_available,
+              size: 44,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            tr.noTasksForThisDay,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            tr.noTasksForThisDayDesc,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 20),
+          OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              side: const BorderSide(color: AppColors.primary),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              ref.read(todayTasksControllerProvider.notifier).selectDate(DateTime.now());
+            },
+            icon: const Icon(Icons.today, size: 16),
+            label: Text(tr.backToToday),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildEmptyState(BuildContext context, WidgetRef ref, Translations tr) {

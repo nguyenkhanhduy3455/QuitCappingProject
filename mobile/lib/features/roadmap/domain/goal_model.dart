@@ -5,6 +5,7 @@ class GoalModel {
   final int durationDays;
   final int currentDay;
   final String status;
+  final DateTime? createdAt;
 
   GoalModel({
     required this.id,
@@ -13,6 +14,7 @@ class GoalModel {
     required this.durationDays,
     required this.currentDay,
     required this.status,
+    this.createdAt,
   });
 
   bool get isActive => status == 'active';
@@ -27,6 +29,9 @@ class GoalModel {
       durationDays: json['durationDays'] ?? 30,
       currentDay: json['currentDay'] ?? 1,
       status: json['status'] ?? 'active',
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString())
+          : null,
     );
   }
 
@@ -38,6 +43,7 @@ class GoalModel {
       'durationDays': durationDays,
       'currentDay': currentDay,
       'status': status,
+      'createdAt': createdAt?.toIso8601String(),
     };
   }
 }
