@@ -6,6 +6,7 @@ class BlindReviewCard {
   final String evidencePrompt;
   final String imageUrl;
   final DateTime createdAt;
+  final bool isOwnSubmission;
 
   BlindReviewCard({
     required this.submissionId,
@@ -15,7 +16,12 @@ class BlindReviewCard {
     required this.evidencePrompt,
     required this.imageUrl,
     required this.createdAt,
+    this.isOwnSubmission = false,
   });
+
+  String get cleanTaskTitle {
+    return taskTitle.replaceFirst(RegExp(r'^(Day|Ngày)\s*\d+:\s*', caseSensitive: false), '').trim();
+  }
 
   factory BlindReviewCard.fromJson(Map<String, dynamic> json) {
     return BlindReviewCard(
@@ -28,6 +34,7 @@ class BlindReviewCard {
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
+      isOwnSubmission: json['isOwnSubmission'] ?? false,
     );
   }
 }
@@ -39,6 +46,8 @@ class ReviewQuotaStatus {
   final int remainingToQuota;
   final int pendingProofsLocked;
   final int inQueueProofsActive;
+  final int availableToReviewCount;
+  final bool bypassQuotaActive;
   final int streakCount;
 
   ReviewQuotaStatus({
@@ -48,6 +57,8 @@ class ReviewQuotaStatus {
     required this.remainingToQuota,
     required this.pendingProofsLocked,
     required this.inQueueProofsActive,
+    this.availableToReviewCount = 0,
+    this.bypassQuotaActive = false,
     required this.streakCount,
   });
 
@@ -59,6 +70,8 @@ class ReviewQuotaStatus {
       remainingToQuota: json['remainingToQuota'] ?? 5,
       pendingProofsLocked: json['pendingProofsLocked'] ?? 0,
       inQueueProofsActive: json['inQueueProofsActive'] ?? 0,
+      availableToReviewCount: json['availableToReviewCount'] ?? 0,
+      bypassQuotaActive: json['bypassQuotaActive'] ?? false,
       streakCount: json['streakCount'] ?? 0,
     );
   }

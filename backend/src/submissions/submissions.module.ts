@@ -6,6 +6,7 @@ import { StorageService } from './services/storage.service';
 import { Submission, SubmissionSchema } from '../database/schemas/submission.schema';
 import { Task, TaskSchema } from '../database/schemas/task.schema';
 import { User, UserSchema } from '../database/schemas/user.schema';
+import { ReviewsModule } from '../reviews/reviews.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { User, UserSchema } from '../database/schemas/user.schema';
       { name: Task.name, schema: TaskSchema },
       { name: User.name, schema: UserSchema },
     ]),
+    ReviewsModule,
   ],
   controllers: [SubmissionsController],
   providers: [SubmissionsService, StorageService],

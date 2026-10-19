@@ -5,6 +5,7 @@ import { TasksService } from './tasks.service';
 import { Task, TaskSchema } from '../database/schemas/task.schema';
 import { Goal, GoalSchema } from '../database/schemas/goal.schema';
 import { Submission, SubmissionSchema } from '../database/schemas/submission.schema';
+import { ReviewsModule } from '../reviews/reviews.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { Submission, SubmissionSchema } from '../database/schemas/submission.sch
       { name: Goal.name, schema: GoalSchema },
       { name: Submission.name, schema: SubmissionSchema },
     ]),
+    ReviewsModule,
   ],
   controllers: [TasksController],
   providers: [TasksService],

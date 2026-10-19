@@ -44,11 +44,25 @@ class SwipeCardState extends ConsumerState<SwipeCard> with SingleTickerProviderS
   }
 
   void swipeRight() {
+    if (widget.card.isOwnSubmission) return;
     _animateAndTrigger(const Offset(500, 0), true);
   }
 
   void swipeLeft() {
+    if (widget.card.isOwnSubmission) return;
     _animateAndTrigger(const Offset(-500, 0), false);
+  }
+
+  void _springBack() {
+    _offsetAnim = Tween<Offset>(begin: _position, end: Offset.zero).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeOutBack),
+    )..addListener(() {
+        setState(() {
+          _position = _offsetAnim.value;
+          _angle = (_position.dx / 400) * (math.pi / 12);
+        });
+      });
+    _animController.forward(from: 0);
   }
 
   void _animateAndTrigger(Offset targetOffset, bool isApproved) {
@@ -76,6 +90,21 @@ class SwipeCardState extends ConsumerState<SwipeCard> with SingleTickerProviderS
 
   void _onPanEnd(DragEndDetails details) {
     if (!widget.isFront) return;
+
+    if (widget.card.isOwnSubmission) {
+      _springBack();
+      final tr = ref.read(translationsProvider);
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(tr.cannotReviewOwnSubmission),
+          backgroundColor: AppColors.reject,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     final threshold = MediaQuery.of(context).size.width * 0.35;
 
     if (_position.dx > threshold) {
@@ -83,16 +112,7 @@ class SwipeCardState extends ConsumerState<SwipeCard> with SingleTickerProviderS
     } else if (_position.dx < -threshold) {
       swipeLeft();
     } else {
-      // Spring back to center
-      _offsetAnim = Tween<Offset>(begin: _position, end: Offset.zero).animate(
-        CurvedAnimation(parent: _animController, curve: Curves.easeOutBack),
-      )..addListener(() {
-          setState(() {
-            _position = _offsetAnim.value;
-            _angle = (_position.dx / 400) * (math.pi / 12);
-          });
-        });
-      _animController.forward(from: 0);
+      _springBack();
     }
   }
 
@@ -171,26 +191,30 @@ class SwipeCardState extends ConsumerState<SwipeCard> with SingleTickerProviderS
                               );
                             },
                           ),
-                          // Blind Review Watermark Tag
+                          // Submission Badge / Watermark Tag
                           Positioned(
                             top: 12,
                             left: 12,
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
-                                color: Colors.black87,
+                                color: widget.card.isOwnSubmission ? AppColors.primary : Colors.black87,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(color: Colors.white24),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.visibility_off, size: 14, color: AppColors.textSecondary),
+                                  Icon(
+                                    widget.card.isOwnSubmission ? Icons.person : Icons.visibility_off,
+                                    size: 14,
+                                    color: widget.card.isOwnSubmission ? Colors.white : AppColors.textSecondary,
+                                  ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    tr.blindReviewWatermark,
-                                    style: const TextStyle(
-                                      color: AppColors.textPrimary,
+                                    widget.card.isOwnSubmission ? tr.yourSubmissionTag : tr.blindReviewWatermark,
+                                    style: TextStyle(
+                                      color: widget.card.isOwnSubmission ? Colors.white : AppColors.textPrimary,
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -213,7 +237,7 @@ class SwipeCardState extends ConsumerState<SwipeCard> with SingleTickerProviderS
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.card.taskTitle,
+                              widget.card.cleanTaskTitle,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -269,7 +293,7 @@ class SwipeCardState extends ConsumerState<SwipeCard> with SingleTickerProviderS
                 ),
 
                 // Approve Stamp Overlay (Green)
-                if (approveOpacity > 0)
+                if (!widget.card.isOwnSubmission && approveOpacity > 0)
                   Positioned(
                     top: 30,
                     left: 20,
@@ -296,7 +320,7 @@ class SwipeCardState extends ConsumerState<SwipeCard> with SingleTickerProviderS
                   ),
 
                 // Reject Stamp Overlay (Red)
-                if (rejectOpacity > 0)
+                if (!widget.card.isOwnSubmission && rejectOpacity > 0)
                   Positioned(
                     top: 30,
                     right: 20,

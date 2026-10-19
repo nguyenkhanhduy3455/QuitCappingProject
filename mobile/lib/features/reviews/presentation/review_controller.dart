@@ -120,4 +120,18 @@ class ReviewController extends StateNotifier<ReviewState> {
       return null;
     }
   }
+
+  Future<void> skipCard(BlindReviewCard card) async {
+    final updatedFeed = List<BlindReviewCard>.from(state.feed)
+      ..removeWhere((c) => c.submissionId == card.submissionId);
+
+    state = state.copyWith(feed: updatedFeed);
+
+    if (state.feed.length <= 2) {
+      try {
+        final more = await _reviewRepo.getSwipeFeed(limit: 10);
+        state = state.copyWith(feed: [...state.feed, ...more]);
+      } catch (_) {}
+    }
+  }
 }

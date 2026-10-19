@@ -258,6 +258,17 @@ class Translations {
       ? 'Bạn đã hoàn thành 5 lượt đánh giá hôm nay!\n\n$count bài nộp của bạn đã được mở khóa và đưa vào hàng đợi chấm điểm của cộng đồng.'
       : 'You completed your 5 peer reviews for today!\n\n$count of your pending task submissions have been unlocked and entered the community review queue.';
   String get letsGo => isVietnamese ? 'QUÁ ĐỈNH!' : 'LETS GO!';
+  String get yourSubmissionTag => isVietnamese ? '🏷️ Bài nộp của bạn' : '🏷️ Your Submission';
+  String get yourSubmissionSubtitle => isVietnamese
+      ? 'Đang trong hàng đợi chờ cộng đồng đánh giá'
+      : 'In community queue awaiting peer votes';
+  String get cannotReviewOwnSubmission => isVietnamese
+      ? 'Bạn không thể tự đánh giá bài nộp của chính mình'
+      : 'You cannot review your own submission';
+  String get skipOwnSubmissionButton => isVietnamese ? 'Bỏ qua bài này' : 'Skip This Task';
+  String get lowQueueBypassNotice => isVietnamese
+      ? 'Hàng đợi có dưới 5 bài, bài nộp được đưa thẳng vào hàng đợi.'
+      : 'Queue has < 5 tasks, proofs enter queue directly.';
   String get antiCheatRulesTitle => isVietnamese ? 'Luật Chống Gian Lận & Đánh Giá' : 'Anti-Cheat & Review Rules';
   String get rulesContent => isVietnamese
       ? '1. Hạn mức Give-to-Get:\nBạn phải đánh giá ít nhất 5 bài nộp mỗi ngày trước khi bài của bạn được cộng đồng chấm.\n\n'

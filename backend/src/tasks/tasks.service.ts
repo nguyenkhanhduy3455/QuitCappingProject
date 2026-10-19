@@ -12,6 +12,7 @@ import { Submission, SubmissionDocument } from '../database/schemas/submission.s
 import { QueryTasksDto } from './dto/query-tasks.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { ReviewsService } from '../reviews/reviews.service';
 
 @Injectable()
 export class TasksService {
@@ -19,9 +20,12 @@ export class TasksService {
     @InjectModel(Task.name) private readonly taskModel: Model<TaskDocument>,
     @InjectModel(Goal.name) private readonly goalModel: Model<GoalDocument>,
     @InjectModel(Submission.name) private readonly submissionModel: Model<SubmissionDocument>,
+    private readonly reviewsService: ReviewsService,
   ) {}
 
   async getDailyTasks(userId: string, query: QueryTasksDto) {
+    await this.reviewsService.resolveExpiredSubmissions();
+
     let goal: GoalDocument | null = null;
 
     if (query.goalId) {
@@ -101,6 +105,8 @@ export class TasksService {
   }
 
   async getTaskById(taskId: string, userId: string) {
+    await this.reviewsService.resolveExpiredSubmissions();
+
     const task = await this.taskModel.findById(taskId).exec();
     if (!task) {
       throw new NotFoundException('Task not found');

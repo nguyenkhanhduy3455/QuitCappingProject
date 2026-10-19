@@ -73,8 +73,9 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
   Widget _buildGiveToGetHeader(ReviewQuotaStatus? quota, Translations tr) {
     final reviewsDone = quota?.dailyReviewsDone ?? 0;
     final target = quota?.targetQuota ?? 5;
-    final isQuotaMet = reviewsDone >= target;
-    final progress = (reviewsDone / target).clamp(0.0, 1.0);
+    final isBypass = quota?.bypassQuotaActive ?? false;
+    final isQuotaMet = (reviewsDone >= target) || isBypass;
+    final progress = isBypass ? 1.0 : (reviewsDone / target).clamp(0.0, 1.0);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -133,7 +134,11 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            isQuotaMet ? tr.quotaUnlockedDesc : tr.quotaNeededDesc(target - reviewsDone),
+            isBypass
+                ? tr.lowQueueBypassNotice
+                : isQuotaMet
+                    ? tr.quotaUnlockedDesc
+                    : tr.quotaNeededDesc(target - reviewsDone),
             style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
           ),
         ],
@@ -183,6 +188,75 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
   }
 
   Widget _buildBottomActionButtons(ReviewState state) {
+    final tr = ref.watch(translationsProvider);
+    final frontCard = state.feed.first;
+
+    if (frontCard.isOwnSubmission) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.person, color: AppColors.primary, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    tr.yourSubmissionTag,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    tr.yourSubmissionSubtitle,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton.icon(
+              onPressed: () {
+                ref.read(reviewControllerProvider.notifier).skipCard(frontCard);
+              },
+              icon: const Icon(Icons.skip_next, size: 18),
+              label: Text(tr.skipOwnSubmissionButton),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.surfaceVariant,
+                foregroundColor: AppColors.textPrimary,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 6),
       child: Row(

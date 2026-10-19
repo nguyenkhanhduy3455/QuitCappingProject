@@ -257,4 +257,96 @@ describe('ReviewsService & Give-to-Get Anti-Cheat Engine', () => {
       expect(result.reviewerQuota.unlockedSubmissionsCount).toBe(2);
     });
   });
+
+  describe('Auto-Pass Past Midnight (resolveExpiredSubmissions)', () => {
+    it('should automatically approve expired submissions past midnight with 3/5 score', async () => {
+      const authorId = new Types.ObjectId();
+      const taskId = new Types.ObjectId();
+      const mockExpiredSub: any = {
+        _id: new Types.ObjectId(),
+        taskId,
+        userId: authorId,
+        status: SubmissionStatus.IN_QUEUE,
+        upvotes: 1,
+        downvotes: 0,
+        createdAt: new Date(Date.now() - 24 * 3600 * 1000), // yesterday
+        save: jest.fn().mockResolvedValue(true),
+      };
+
+      const mockTask: any = {
+        _id: taskId,
+        goalId: new Types.ObjectId(),
+        dayNumber: 1,
+        isCompleted: false,
+        save: jest.fn().mockResolvedValue(true),
+      };
+
+      const mockAuthor: any = {
+        _id: authorId,
+        points: 1000,
+        save: jest.fn().mockResolvedValue(true),
+      };
+
+      mockSubmissionModel.find.mockReturnValue({
+        exec: jest.fn().mockResolvedValue([mockExpiredSub]),
+      });
+      mockTaskModel.findById.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockTask) });
+      mockUserModel.findById.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockAuthor) });
+      mockTaskModel.countDocuments.mockReturnValue({ exec: jest.fn().mockResolvedValue(0) });
+      mockGoalModel.findById.mockReturnValue({ exec: jest.fn().mockResolvedValue(null) });
+
+      const count = await service.resolveExpiredSubmissions();
+
+      expect(count).toBe(1);
+      expect(mockExpiredSub.status).toBe(SubmissionStatus.APPROVED);
+      expect(mockExpiredSub.upvotes).toBe(3);
+      expect(mockTask.isCompleted).toBe(true);
+      expect(mockAuthor.points).toBe(1010);
+    });
+  });
+
+  describe('Swipe Feed with Own Submission Visibility', () => {
+    it('should return swipe feed and mark user own submission with isOwnSubmission=true', async () => {
+      const currentUserId = new Types.ObjectId().toString();
+      const peerUserId = new Types.ObjectId().toString();
+      const taskId1 = new Types.ObjectId();
+      const taskId2 = new Types.ObjectId();
+
+      const mockSubs: any[] = [
+        {
+          _id: new Types.ObjectId(),
+          taskId: { _id: taskId1, title: 'Task 1', description: 'Desc 1', evidencePrompt: 'Evidence 1' },
+          userId: new Types.ObjectId(currentUserId), // current user's own submission
+          imageUrl: 'https://example.com/own.jpg',
+          createdAt: new Date(),
+        },
+        {
+          _id: new Types.ObjectId(),
+          taskId: { _id: taskId2, title: 'Task 2', description: 'Desc 2', evidencePrompt: 'Evidence 2' },
+          userId: new Types.ObjectId(peerUserId), // peer user's submission
+          imageUrl: 'https://example.com/peer.jpg',
+          createdAt: new Date(),
+        },
+      ];
+
+      // resolveExpiredSubmissions empty check
+      mockSubmissionModel.find.mockImplementationOnce(() => ({
+        exec: jest.fn().mockResolvedValue([]),
+      }));
+
+      // getSwipeFeed submissions query
+      mockSubmissionModel.find.mockImplementationOnce(() => ({
+        populate: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockSubs),
+      }));
+
+      const feed = await service.getSwipeFeed(currentUserId);
+
+      expect(feed.length).toBe(2);
+      expect(feed[0].isOwnSubmission).toBe(true);
+      expect(feed[1].isOwnSubmission).toBe(false);
+    });
+  });
 });

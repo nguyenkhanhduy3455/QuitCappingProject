@@ -5,6 +5,8 @@ import {
   Injectable,
   NotFoundException,
   Logger,
+  OnModuleInit,
+  OnModuleDestroy,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -18,7 +20,7 @@ import { User, UserDocument } from '../database/schemas/user.schema';
 import { Task, TaskDocument } from '../database/schemas/task.schema';
 import { Goal, GoalDocument } from '../database/schemas/goal.schema';
 import { SubmitReviewDto } from './dto/submit-review.dto';
-import { isSameUtcDay } from '../common/utils/date.utils';
+import { isSameUtcDay, startOfUtcDay } from '../common/utils/date.utils';
 
 export interface BlindReviewCard {
   submissionId: string;
@@ -28,12 +30,14 @@ export interface BlindReviewCard {
   evidencePrompt: string;
   imageUrl: string;
   createdAt: Date;
+  isOwnSubmission: boolean;
 }
 
 @Injectable()
-export class ReviewsService {
+export class ReviewsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(ReviewsService.name);
   private static readonly DAILY_QUOTA_TARGET = 5;
+  private cleanupInterval?: NodeJS.Timeout;
 
   constructor(
     @InjectModel(Review.name) private readonly reviewModel: Model<ReviewDocument>,
@@ -42,6 +46,78 @@ export class ReviewsService {
     @InjectModel(Task.name) private readonly taskModel: Model<TaskDocument>,
     @InjectModel(Goal.name) private readonly goalModel: Model<GoalDocument>,
   ) {}
+
+  async onModuleInit() {
+    await this.resolveExpiredSubmissions();
+    this.cleanupInterval = setInterval(() => {
+      this.resolveExpiredSubmissions().catch((err) => {
+        this.logger.error(`Error in resolveExpiredSubmissions interval: ${err.message}`);
+      });
+    }, 10 * 60 * 1000);
+  }
+
+  onModuleDestroy() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
+  }
+
+  /**
+   * Automatically passes submissions created before today's 00:00:00 (quá 12h đêm)
+   * that have not reached 5 reviews and haven't been rejected.
+   * Gives them 3/5 approval and marks task complete (+10 points for author).
+   */
+  async resolveExpiredSubmissions(): Promise<number> {
+    try {
+      const now = new Date();
+      const localMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+      const utcMidnight = startOfUtcDay(now);
+      const cutoff = localMidnight > utcMidnight ? localMidnight : utcMidnight;
+
+      const expiredSubmissions = await this.submissionModel
+        .find({
+          status: { $in: [SubmissionStatus.IN_QUEUE, SubmissionStatus.PENDING_QUOTA] },
+          createdAt: { $lt: cutoff },
+          downvotes: { $lt: 3 },
+        })
+        .exec();
+
+      if (!expiredSubmissions || expiredSubmissions.length === 0) {
+        return 0;
+      }
+
+      let resolvedCount = 0;
+      for (const sub of expiredSubmissions) {
+        sub.status = SubmissionStatus.APPROVED;
+        sub.upvotes = Math.max(sub.upvotes || 0, 3);
+        await sub.save();
+
+        const task = await this.taskModel.findById(sub.taskId).exec();
+        if (task) {
+          task.isCompleted = true;
+          await task.save();
+          await this.checkAndUpdateStreak(task);
+        }
+
+        const author = await this.userModel.findById(sub.userId).exec();
+        if (author) {
+          author.points = (author.points ?? 1000) + 10;
+          await author.save();
+        }
+
+        resolvedCount++;
+      }
+
+      if (resolvedCount > 0) {
+        this.logger.log(`Auto-passed ${resolvedCount} submissions past midnight with 3/5 score.`);
+      }
+
+      return resolvedCount;
+    } catch (err: any) {
+      this.logger.error(`Failed to resolve expired submissions: ${err.message}`);
+      return 0;
+    }
+  }
 
   /**
    * Resets quota if a new UTC day has arrived.
@@ -55,23 +131,26 @@ export class ReviewsService {
   }
 
   /**
-   * Generates a random blind swipe feed for peer review.
+   * Generates a random swipe feed for peer review.
    * Rules:
    * 1. Submission status must be 'in_queue'.
-   * 2. Self-review prevention: userId != currentUserId.
+   * 2. Self submissions ARE included in feed so user sees their own submissions in queue,
+   *    but user cannot review them.
    * 3. Idempotency: submissionId not already reviewed by current user (reviewedByUserIds != currentUserId).
-   * 4. Blind review: NEVER expose author name, id, or avatar.
+   * 4. Blind review: NEVER expose author name, id, or avatar for peer cards.
    */
-  async getSwipeFeed(userId: string, limit: number = 10): Promise<BlindReviewCard[]> {
+  async getSwipeFeed(userId: string, limit: number = 15): Promise<BlindReviewCard[]> {
+    await this.resolveExpiredSubmissions();
+
     const userObjectId = new Types.ObjectId(userId);
 
     const submissions = await this.submissionModel
       .find({
         status: SubmissionStatus.IN_QUEUE,
-        userId: { $ne: userObjectId },
         reviewedByUserIds: { $ne: userObjectId },
       })
       .populate('taskId')
+      .sort({ createdAt: -1 })
       .limit(limit)
       .exec();
 
@@ -79,6 +158,7 @@ export class ReviewsService {
       .filter((s) => s.taskId != null)
       .map((s) => {
         const task = s.taskId as unknown as TaskDocument;
+        const isOwn = s.userId.toString() === userId;
         return {
           submissionId: s._id.toString(),
           taskId: task._id.toString(),
@@ -87,6 +167,7 @@ export class ReviewsService {
           evidencePrompt: task.evidencePrompt,
           imageUrl: s.imageUrl,
           createdAt: s.createdAt,
+          isOwnSubmission: isOwn,
         };
       });
   }
@@ -230,6 +311,8 @@ export class ReviewsService {
    * Retrieves reviewer's Give-to-Get quota status and pending proofs count.
    */
   async getQuotaStatus(userId: string) {
+    await this.resolveExpiredSubmissions();
+
     const reviewerObjectId = new Types.ObjectId(userId);
     const user = await this.userModel.findById(reviewerObjectId).exec();
     if (!user) {
@@ -251,16 +334,26 @@ export class ReviewsService {
       status: SubmissionStatus.IN_QUEUE,
     });
 
+    // Count how many submissions by other users are in queue waiting to be reviewed
+    const availableToReviewCount = await this.submissionModel.countDocuments({
+      status: SubmissionStatus.IN_QUEUE,
+      userId: { $ne: reviewerObjectId },
+      reviewedByUserIds: { $ne: reviewerObjectId },
+    });
+
     const dailyReviewsDone = user.dailyReviewsDone || 0;
     const remainingToQuota = Math.max(0, ReviewsService.DAILY_QUOTA_TARGET - dailyReviewsDone);
+    const bypassQuotaActive = availableToReviewCount < ReviewsService.DAILY_QUOTA_TARGET;
 
     return {
       dailyReviewsDone,
       targetQuota: ReviewsService.DAILY_QUOTA_TARGET,
-      quotaReached: dailyReviewsDone >= ReviewsService.DAILY_QUOTA_TARGET,
+      quotaReached: dailyReviewsDone >= ReviewsService.DAILY_QUOTA_TARGET || bypassQuotaActive,
       remainingToQuota,
       pendingProofsLocked: pendingCount,
       inQueueProofsActive: inQueueCount,
+      availableToReviewCount,
+      bypassQuotaActive,
       streakCount: user.streakCount || 0,
     };
   }

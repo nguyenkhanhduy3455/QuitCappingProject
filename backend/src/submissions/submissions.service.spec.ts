@@ -5,6 +5,7 @@ import { Submission, SubmissionStatus } from '../database/schemas/submission.sch
 import { Task } from '../database/schemas/task.schema';
 import { User } from '../database/schemas/user.schema';
 import { StorageService } from './services/storage.service';
+import { ReviewsService } from '../reviews/reviews.service';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 
@@ -18,6 +19,8 @@ describe('SubmissionsService - Give-to-Get Ingestion', () => {
   }));
   mockSubmissionModel.find = jest.fn();
   mockSubmissionModel.findById = jest.fn();
+  mockSubmissionModel.countDocuments = jest.fn();
+  mockSubmissionModel.updateMany = jest.fn();
 
   const mockTaskModel: any = {
     findById: jest.fn(),
@@ -31,6 +34,10 @@ describe('SubmissionsService - Give-to-Get Ingestion', () => {
     uploadFile: jest.fn().mockResolvedValue('https://res.cloudinary.com/demo/image/upload/sample.jpg'),
   };
 
+  const mockReviewsService: any = {
+    resolveExpiredSubmissions: jest.fn().mockResolvedValue(0),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -41,6 +48,7 @@ describe('SubmissionsService - Give-to-Get Ingestion', () => {
         { provide: getModelToken(Task.name), useValue: mockTaskModel },
         { provide: getModelToken(User.name), useValue: mockUserModel },
         { provide: StorageService, useValue: mockStorageService },
+        { provide: ReviewsService, useValue: mockReviewsService },
       ],
     }).compile();
 
@@ -67,6 +75,8 @@ describe('SubmissionsService - Give-to-Get Ingestion', () => {
       }),
     });
 
+    mockSubmissionModel.countDocuments.mockResolvedValue(10); // Plenty in queue
+
     const result = await service.createSubmission(userId, {
       taskId,
       imageUrl: 'https://cdn.quitcapping.app/proofs/123.jpg',
@@ -75,6 +85,7 @@ describe('SubmissionsService - Give-to-Get Ingestion', () => {
     expect(result.submission.status).toBe(SubmissionStatus.PENDING_QUOTA);
     expect(result.quotaStatus.isUnlockedInQueue).toBe(false);
     expect(result.quotaStatus.reviewsNeededToQueue).toBe(3);
+    expect(result.quotaStatus.bypassedDueToLowQueue).toBe(false);
   });
 
   it('should create submission directly with status IN_QUEUE if dailyReviewsDone >= 5', async () => {
@@ -97,6 +108,8 @@ describe('SubmissionsService - Give-to-Get Ingestion', () => {
       }),
     });
 
+    mockSubmissionModel.countDocuments.mockResolvedValue(10);
+
     const result = await service.createSubmission(userId, {
       taskId,
       imageUrl: 'https://cdn.quitcapping.app/proofs/123.jpg',
@@ -105,6 +118,41 @@ describe('SubmissionsService - Give-to-Get Ingestion', () => {
     expect(result.submission.status).toBe(SubmissionStatus.IN_QUEUE);
     expect(result.quotaStatus.isUnlockedInQueue).toBe(true);
     expect(result.quotaStatus.reviewsNeededToQueue).toBe(0);
+  });
+
+  it('should bypass Give-to-Get and create submission directly with status IN_QUEUE if available reviews in queue < 5', async () => {
+    const userId = new Types.ObjectId().toString();
+    const taskId = new Types.ObjectId().toString();
+
+    mockTaskModel.findById.mockReturnValue({
+      exec: jest.fn().mockResolvedValue({
+        _id: new Types.ObjectId(taskId),
+        userId: new Types.ObjectId(userId),
+      }),
+    });
+
+    mockUserModel.findById.mockReturnValue({
+      exec: jest.fn().mockResolvedValue({
+        _id: new Types.ObjectId(userId),
+        dailyReviewsDone: 0, // 0 reviews done, but queue is low (< 5)
+        lastReviewDate: new Date(),
+        save: jest.fn().mockResolvedValue(true),
+      }),
+    });
+
+    // Queue has only 2 tasks available
+    mockSubmissionModel.countDocuments.mockResolvedValue(2);
+    mockSubmissionModel.updateMany.mockResolvedValue({ modifiedCount: 1 });
+
+    const result = await service.createSubmission(userId, {
+      taskId,
+      imageUrl: 'https://cdn.quitcapping.app/proofs/123.jpg',
+    });
+
+    expect(result.submission.status).toBe(SubmissionStatus.IN_QUEUE);
+    expect(result.quotaStatus.isUnlockedInQueue).toBe(true);
+    expect(result.quotaStatus.bypassedDueToLowQueue).toBe(true);
+    expect(mockSubmissionModel.updateMany).toHaveBeenCalled();
   });
 
   it('should reject submission if task belongs to another user', async () => {
