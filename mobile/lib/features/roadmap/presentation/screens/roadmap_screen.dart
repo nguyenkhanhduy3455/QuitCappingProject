@@ -3,21 +3,53 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/translations.dart';
 import '../../../proof/presentation/widgets/submit_proof_dialog.dart';
+import '../../domain/goal_model.dart';
 import '../../domain/task_model.dart';
 import '../roadmap_controller.dart';
 import 'create_goal_screen.dart';
 
-class RoadmapScreen extends ConsumerWidget {
-  const RoadmapScreen({super.key});
+class RoadmapScreen extends ConsumerStatefulWidget {
+  final GoalModel? initialGoal;
+
+  const RoadmapScreen({super.key, this.initialGoal});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RoadmapScreen> createState() => _RoadmapScreenState();
+}
+
+class _RoadmapScreenState extends ConsumerState<RoadmapScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.initialGoal != null) {
+        ref.read(roadmapControllerProvider.notifier).loadRoadmapForGoal(widget.initialGoal!);
+      } else {
+        ref.read(roadmapControllerProvider.notifier).loadActiveRoadmap();
+      }
+    });
+  }
+
+  void _refresh() {
+    if (widget.initialGoal != null) {
+      ref.read(roadmapControllerProvider.notifier).loadRoadmapForGoal(widget.initialGoal!);
+    } else {
+      ref.read(roadmapControllerProvider.notifier).loadActiveRoadmap();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(roadmapControllerProvider);
     final tr = ref.watch(translationsProvider);
 
+    final title = widget.initialGoal != null
+        ? '${tr.isVietnamese ? "Lộ trình" : "Roadmap"}: ${widget.initialGoal!.title}'
+        : tr.dailyRoadmap;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(tr.dailyRoadmap),
+        title: Text(title),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
@@ -31,7 +63,7 @@ class RoadmapScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => ref.read(roadmapControllerProvider.notifier).loadActiveRoadmap(),
+            onPressed: _refresh,
           ),
         ],
       ),
@@ -100,7 +132,7 @@ class RoadmapScreen extends ConsumerWidget {
 
     return RefreshIndicator(
       color: AppColors.primary,
-      onRefresh: () => ref.read(roadmapControllerProvider.notifier).loadActiveRoadmap(),
+      onRefresh: () async => _refresh(),
       child: ListView(
         padding: const EdgeInsets.symmetric(vertical: 16),
         children: [

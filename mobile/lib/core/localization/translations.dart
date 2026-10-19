@@ -13,11 +13,13 @@ class Translations {
 
   bool get isVietnamese => language == AppLanguage.vi;
 
-  // General & Nav
+  // General & Nav (4 Tabs)
   String get appName => 'QuitCapping';
   String get appTagline => isVietnamese
       ? 'Bớt bốc phét. Đưa bằng chứng thật.'
       : 'Stop capping. Provide real proof.';
+  String get tasks => isVietnamese ? 'Nhiệm vụ' : 'Tasks';
+  String get goals => isVietnamese ? 'Mục tiêu' : 'Goals';
   String get roadmap => isVietnamese ? 'Lộ trình' : 'Roadmap';
   String get peerReview => isVietnamese ? 'Đánh giá chéo' : 'Peer Review';
   String get profile => isVietnamese ? 'Cá nhân' : 'Profile';
@@ -29,6 +31,36 @@ class Translations {
   String get logOutConfirm => isVietnamese
       ? 'Bạn có chắc chắn muốn đăng xuất khỏi QuitCapping?'
       : 'Are you sure you want to log out of QuitCapping?';
+
+  // Tab 1: Today's Tasks
+  String get todayTasks => isVietnamese ? 'Nhiệm vụ hôm nay' : "Today's Tasks";
+  String get todayTasksSubtitle => isVietnamese
+      ? '{completed}/{total} nhiệm vụ hôm nay'
+      : '{completed}/{total} tasks today';
+  String get noTasksToday => isVietnamese
+      ? 'Hôm nay chưa có nhiệm vụ nào'
+      : 'No tasks for today';
+  String get noTasksTodayDesc => isVietnamese
+      ? 'Bạn chưa có mục tiêu nào đang hoạt động. Hãy tạo hoặc chọn mục tiêu để bắt đầu ngay!'
+      : 'You have no active goals. Create or choose a goal to get started!';
+  String get goToGoals => isVietnamese ? 'ĐẾN MỤC TIÊU' : 'GO TO GOALS';
+  String get activeGoal => isVietnamese ? 'Mục tiêu đang chọn' : 'Active Goal';
+  String get switchGoal => isVietnamese ? 'Đổi mục tiêu' : 'Switch Goal';
+
+  // Tab 2: Goals Management
+  String get yourGoals => isVietnamese ? 'Danh sách mục tiêu' : 'Your Goals';
+  String get allGoals => isVietnamese ? 'Tất cả mục tiêu' : 'All Goals';
+  String get activeTag => isVietnamese ? 'ĐANG HOẠT ĐỘNG' : 'ACTIVE';
+  String get completedTag => isVietnamese ? 'ĐÃ HOÀN THÀNH' : 'COMPLETED';
+  String get viewRoadmap => isVietnamese ? 'Xem lộ trình chi tiết' : 'View Full Roadmap';
+  String get noGoalsYet => isVietnamese ? 'Chưa có mục tiêu nào' : 'No goals yet';
+  String get noGoalsYetDesc => isVietnamese
+      ? 'Nhấn "+ Tạo mục tiêu AI" để Google Gemini lập kế hoạch micro-tasks cho bạn!'
+      : 'Tap "+ New AI Goal" to let Google Gemini generate your micro-tasks roadmap!';
+  String get roadmapDetailTitle => isVietnamese ? 'Lộ trình chi tiết' : 'Roadmap Detail';
+  String get dayProgression => isVietnamese
+      ? 'Ngày {current}/{total} • {percent}%'
+      : 'Day {current}/{total} • {percent}%';
 
   // Auth Screen
   String get email => 'Email';

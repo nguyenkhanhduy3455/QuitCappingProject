@@ -52,6 +52,17 @@ class GoalRepository {
     }
   }
 
+  Future<List<GoalModel>> getUserGoals() async {
+    try {
+      final response = await _dio.get(ApiEndpoints.goals);
+      final list = response.data as List<dynamic>? ?? [];
+      return list.map((g) => GoalModel.fromJson(g as Map<String, dynamic>)).toList();
+    } on DioException catch (e) {
+      if (e.error is ApiException) throw e.error as ApiException;
+      throw ApiException(e.message ?? 'Failed to fetch user goals');
+    }
+  }
+
   Future<List<TaskModel>> getDailyTasks({String? goalId, int? dayNumber}) async {
     try {
       final queryParams = <String, dynamic>{};
@@ -65,6 +76,34 @@ class GoalRepository {
 
       final tasksJson = response.data['tasks'] as List<dynamic>? ?? [];
       return tasksJson.map((t) => TaskModel.fromJson(t as Map<String, dynamic>)).toList();
+    } on DioException catch (e) {
+      if (e.error is ApiException) throw e.error as ApiException;
+      throw ApiException(e.message ?? 'Failed to fetch daily tasks');
+    }
+  }
+
+  Future<({GoalModel? goal, int dayNumber, List<TaskModel> tasks})> getDailyTasksDetailed({
+    String? goalId,
+    int? dayNumber,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (goalId != null) queryParams['goalId'] = goalId;
+      if (dayNumber != null) queryParams['dayNumber'] = dayNumber;
+
+      final response = await _dio.get(
+        ApiEndpoints.dailyTasks,
+        queryParameters: queryParams,
+      );
+
+      GoalModel? goal;
+      if (response.data != null && response.data['goal'] != null) {
+        goal = GoalModel.fromJson(response.data['goal'] as Map<String, dynamic>);
+      }
+      final resolvedDayNumber = (response.data?['dayNumber'] as num?)?.toInt() ?? 1;
+      final tasksJson = response.data?['tasks'] as List<dynamic>? ?? [];
+      final tasks = tasksJson.map((t) => TaskModel.fromJson(t as Map<String, dynamic>)).toList();
+      return (goal: goal, dayNumber: resolvedDayNumber, tasks: tasks);
     } on DioException catch (e) {
       if (e.error is ApiException) throw e.error as ApiException;
       throw ApiException(e.message ?? 'Failed to fetch daily tasks');

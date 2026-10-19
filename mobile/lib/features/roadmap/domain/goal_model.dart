@@ -15,6 +15,10 @@ class GoalModel {
     required this.status,
   });
 
+  bool get isActive => status == 'active';
+  double get progress => durationDays > 0 ? (currentDay / durationDays).clamp(0.0, 1.0) : 0.0;
+  int get percent => (progress * 100).round();
+
   factory GoalModel.fromJson(Map<String, dynamic> json) {
     return GoalModel(
       id: json['_id'] ?? json['id'] ?? '',

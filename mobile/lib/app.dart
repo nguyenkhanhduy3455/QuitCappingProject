@@ -7,7 +7,10 @@ import 'features/auth/presentation/auth_controller.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/profile/presentation/screens/profile_screen.dart';
 import 'features/reviews/presentation/screens/review_feed_screen.dart';
-import 'features/roadmap/presentation/screens/roadmap_screen.dart';
+import 'features/roadmap/presentation/screens/goals_screen.dart';
+import 'features/tasks_today/presentation/screens/today_tasks_screen.dart';
+
+final bottomNavIndexProvider = StateProvider<int>((ref) => 0);
 
 class QuitCappingApp extends ConsumerWidget {
   const QuitCappingApp({super.key});
@@ -41,29 +44,24 @@ class QuitCappingApp extends ConsumerWidget {
   }
 }
 
-class MainNavigationShell extends ConsumerStatefulWidget {
+class MainNavigationShell extends ConsumerWidget {
   const MainNavigationShell({super.key});
 
-  @override
-  ConsumerState<MainNavigationShell> createState() => _MainNavigationShellState();
-}
-
-class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
-  int _currentIndex = 0;
-
-  final List<Widget> _screens = const [
-    RoadmapScreen(),
+  static const List<Widget> _screens = [
+    TodayTasksScreen(),
+    GoalsScreen(),
     ReviewFeedScreen(),
     ProfileScreen(),
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final tr = ref.watch(translationsProvider);
+    final currentIndex = ref.watch(bottomNavIndexProvider);
 
     return Scaffold(
       body: IndexedStack(
-        index: _currentIndex,
+        index: currentIndex,
         children: _screens,
       ),
       bottomNavigationBar: Container(
@@ -71,19 +69,24 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
           border: Border(top: BorderSide(color: AppColors.cardBorder, width: 1)),
         ),
         child: BottomNavigationBar(
-          currentIndex: _currentIndex,
+          currentIndex: currentIndex,
           backgroundColor: AppColors.surface,
           selectedItemColor: AppColors.primary,
           unselectedItemColor: AppColors.textSecondary,
           selectedFontSize: 12,
           unselectedFontSize: 12,
           type: BottomNavigationBarType.fixed,
-          onTap: (index) => setState(() => _currentIndex = index),
+          onTap: (index) => ref.read(bottomNavIndexProvider.notifier).state = index,
           items: [
             BottomNavigationBarItem(
-              icon: const Icon(Icons.map_outlined),
-              activeIcon: const Icon(Icons.map),
-              label: tr.roadmap,
+              icon: const Icon(Icons.check_circle_outline),
+              activeIcon: const Icon(Icons.check_circle),
+              label: tr.tasks,
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.track_changes_outlined),
+              activeIcon: const Icon(Icons.track_changes),
+              label: tr.goals,
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.style_outlined),

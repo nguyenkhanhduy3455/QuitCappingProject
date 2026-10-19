@@ -7,6 +7,7 @@ import '../../../../core/localization/translations.dart';
 import '../../../auth/presentation/auth_controller.dart';
 import '../../../roadmap/domain/task_model.dart';
 import '../../../roadmap/presentation/roadmap_controller.dart';
+import '../../../tasks_today/presentation/today_tasks_controller.dart';
 import '../../data/submission_repository.dart';
 
 class SubmitProofDialog extends ConsumerStatefulWidget {
@@ -73,6 +74,7 @@ class _SubmitProofDialogState extends ConsumerState<SubmitProofDialog> {
 
       // Refresh tasks and auth profile state
       await ref.read(roadmapControllerProvider.notifier).refreshCurrentTasks();
+      await ref.read(todayTasksControllerProvider.notifier).refresh();
       await ref.read(authControllerProvider.notifier).refreshProfile();
 
       if (mounted) {

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/translations.dart';
+import '../../../tasks_today/presentation/today_tasks_controller.dart';
+import '../goals_controller.dart';
 import '../roadmap_controller.dart';
 
 class CreateGoalScreen extends ConsumerStatefulWidget {
@@ -53,6 +55,8 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
         );
 
     if (success && mounted) {
+      ref.read(todayTasksControllerProvider.notifier).loadTodayTasks();
+      ref.read(goalsControllerProvider.notifier).loadGoals();
       Navigator.pop(context);
     } else if (mounted) {
       final error = ref.read(roadmapControllerProvider).errorMessage ?? 'Failed to generate goal';

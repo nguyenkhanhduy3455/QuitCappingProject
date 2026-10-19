@@ -92,6 +92,30 @@ class RoadmapController extends StateNotifier<RoadmapState> {
     }
   }
 
+  Future<void> loadRoadmapForGoal(GoalModel goal, {int? dayNumber}) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final dayToSelect = dayNumber ?? (goal.currentDay > 0 ? goal.currentDay : 1);
+      final tasks = await _goalRepo.getDailyTasks(
+        goalId: goal.id,
+        dayNumber: dayToSelect,
+      );
+      state = state.copyWith(
+        isLoading: false,
+        activeGoal: goal,
+        selectedDay: dayToSelect,
+        tasks: tasks,
+      );
+    } on ApiException catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.message);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Failed to load roadmap: ${e.toString()}',
+      );
+    }
+  }
+
   Future<void> selectDay(int day) async {
     if (state.activeGoal == null || day == state.selectedDay) return;
     state = state.copyWith(isLoading: true, selectedDay: day);
