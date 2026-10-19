@@ -396,6 +396,70 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     );
   }
 
+  Future<void> _confirmDeleteTask(Translations tr) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.cardBorder),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.delete_outline, color: AppColors.reject),
+            const SizedBox(width: 8),
+            Text(tr.confirmDeleteTaskTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(
+          tr.confirmDeleteTaskMessage,
+          style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(tr.cancel, style: const TextStyle(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.reject,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(tr.deleteBtn, style: const TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        await ref.read(goalRepositoryProvider).deleteTask(_task.id);
+        await ref.read(todayTasksControllerProvider.notifier).refresh();
+        await ref.read(roadmapControllerProvider.notifier).refreshCurrentTasks();
+        if (mounted) {
+          Navigator.pop(context, true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(tr.taskDeletedSuccess),
+              backgroundColor: AppColors.approve,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: AppColors.reject,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final tr = ref.watch(translationsProvider);
@@ -409,6 +473,11 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             icon: const Icon(Icons.edit_outlined),
             tooltip: tr.editTask,
             onPressed: () => _showEditTaskDialog(tr),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: AppColors.reject),
+            tooltip: tr.deleteTask,
+            onPressed: () => _confirmDeleteTask(tr),
           ),
         ],
       ),
@@ -481,18 +550,37 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                             color: AppColors.primary,
                           ),
                         ),
-                        TextButton.icon(
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          onPressed: () => _showEditTaskDialog(tr),
-                          icon: const Icon(Icons.edit, size: 14, color: AppColors.primary),
-                          label: Text(
-                            tr.editTask,
-                            style: const TextStyle(fontSize: 12, color: AppColors.primary),
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextButton.icon(
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              onPressed: () => _showEditTaskDialog(tr),
+                              icon: const Icon(Icons.edit, size: 14, color: AppColors.primary),
+                              label: Text(
+                                tr.editTask,
+                                style: const TextStyle(fontSize: 12, color: AppColors.primary),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            TextButton.icon(
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              onPressed: () => _confirmDeleteTask(tr),
+                              icon: const Icon(Icons.delete_outline, size: 14, color: AppColors.reject),
+                              label: Text(
+                                tr.deleteTask,
+                                style: const TextStyle(fontSize: 12, color: AppColors.reject),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

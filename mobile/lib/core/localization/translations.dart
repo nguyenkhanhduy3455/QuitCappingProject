@@ -84,6 +84,13 @@ class Translations {
       : 'Evidence photo requirement (e.g. Screenshot, gym photo...)';
   String get save => isVietnamese ? 'Lưu' : 'Save';
   String get taskUpdatedSuccess => isVietnamese ? 'Cập nhật nhiệm vụ thành công!' : 'Task updated successfully!';
+  String get deleteTask => isVietnamese ? 'Xóa nhiệm vụ' : 'Delete Task';
+  String get confirmDeleteTaskTitle => isVietnamese ? 'Xóa nhiệm vụ' : 'Delete Task';
+  String get confirmDeleteTaskMessage => isVietnamese
+      ? 'Bạn có chắc chắn muốn xóa nhiệm vụ này không? Hành động này không thể hoàn tác.'
+      : 'Are you sure you want to delete this task? This action cannot be undone.';
+  String get taskDeletedSuccess => isVietnamese ? 'Đã xóa nhiệm vụ thành công!' : 'Task deleted successfully!';
+  String get deleteBtn => isVietnamese ? 'XÓA' : 'DELETE';
   String get addTask => isVietnamese ? 'Thêm nhiệm vụ' : 'Add Task';
   String get createCustomTaskTitle => isVietnamese ? 'Thêm nhiệm vụ cho ngày' : 'Add Task for Date';
   String get taskCreatedSuccess => isVietnamese ? 'Đã thêm nhiệm vụ mới!' : 'Task created successfully!';

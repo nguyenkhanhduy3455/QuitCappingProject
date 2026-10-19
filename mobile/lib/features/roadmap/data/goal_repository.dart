@@ -170,4 +170,13 @@ class GoalRepository {
       throw ApiException(e.message ?? 'Failed to update task');
     }
   }
+
+  Future<void> deleteTask(String taskId) async {
+    try {
+      await _dio.delete(ApiEndpoints.taskById(taskId));
+    } on DioException catch (e) {
+      if (e.error is ApiException) throw e.error as ApiException;
+      throw ApiException(e.message ?? 'Failed to delete task');
+    }
+  }
 }

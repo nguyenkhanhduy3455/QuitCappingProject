@@ -230,4 +230,20 @@ export class TasksService {
         : null,
     };
   }
+
+  async deleteTask(taskId: string, userId: string) {
+    const task = await this.taskModel.findById(taskId).exec();
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+    if (task.userId.toString() !== userId) {
+      throw new ForbiddenException('You do not have access to delete this task');
+    }
+
+    // Delete any submissions linked to this task
+    await this.submissionModel.deleteMany({ taskId: task._id }).exec();
+    await this.taskModel.findByIdAndDelete(taskId).exec();
+
+    return { success: true, message: 'Task deleted successfully' };
+  }
 }
