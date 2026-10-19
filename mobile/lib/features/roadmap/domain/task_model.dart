@@ -25,6 +25,17 @@ class TaskSubmissionSummary {
       createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'imageUrl': imageUrl,
+      'status': status,
+      'upvotes': upvotes,
+      'downvotes': downvotes,
+      'createdAt': createdAt?.toIso8601String(),
+    };
+  }
 }
 
 class TaskModel {
@@ -61,6 +72,19 @@ class TaskModel {
           ? TaskSubmissionSummary.fromJson(json['latestSubmission'] as Map<String, dynamic>)
           : null,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'goalId': goalId,
+      'dayNumber': dayNumber,
+      'title': title,
+      'description': description,
+      'evidencePrompt': evidencePrompt,
+      'isCompleted': isCompleted,
+      'latestSubmission': latestSubmission?.toJson(),
+    };
   }
 
   String get cleanTitle => title.replaceAll(RegExp(r'^(Day|Ngày)\s*\d+[\s:\-–—]+', caseSensitive: false), '').trim();

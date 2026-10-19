@@ -5,11 +5,13 @@ import 'package:http_parser/http_parser.dart';
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/storage/local_data_storage.dart';
 import '../domain/submission_model.dart';
 
 final submissionRepositoryProvider = Provider<SubmissionRepository>((ref) {
   final dio = ref.watch(dioProvider);
-  return SubmissionRepository(dio);
+  final localData = ref.watch(localDataStorageProvider);
+  return SubmissionRepository(dio, localData);
 });
 
 class SubmissionResult {
@@ -30,14 +32,20 @@ class SubmissionResult {
 
 class SubmissionRepository {
   final Dio _dio;
+  final LocalDataStorage _localData;
 
-  SubmissionRepository(this._dio);
+  SubmissionRepository(this._dio, this._localData);
 
   Future<SubmissionResult> submitProof({
     required String taskId,
     File? imageFile,
     String? imageUrl,
   }) async {
+    if (_localData.isGuestMode()) {
+      final path = imageFile?.path ?? imageUrl;
+      return await _localData.submitProof(taskId: taskId, imageUrl: path);
+    }
+
     try {
       dynamic data;
 

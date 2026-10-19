@@ -56,13 +56,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            // Top Language Toggle Pill (VN / EN)
-            const Positioned(
-              top: 12,
-              right: 16,
-              child: LanguageTogglePill(),
-            ),
-
             Center(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -198,10 +191,90 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 24),
+
+                      // Divider
+                      Row(
+                        children: [
+                          const Expanded(child: Divider(color: AppColors.cardBorder)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              tr.orDivider,
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ),
+                          const Expanded(child: Divider(color: AppColors.cardBorder)),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Continue as Guest Button (Local Data Storage)
+                      OutlinedButton(
+                        onPressed: isLoading
+                            ? null
+                            : () async {
+                                await ref
+                                    .read(authControllerProvider.notifier)
+                                    .continueAsGuest();
+                              },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                          side: const BorderSide(color: AppColors.cardBorder, width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          backgroundColor: AppColors.surface,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.person_outline, color: AppColors.primary, size: 22),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    tr.continueAsGuest,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    tr.guestModeDesc,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
+            ),
+
+            // Top Language Toggle Pill (VN / EN)
+            const Positioned(
+              top: 12,
+              right: 16,
+              child: LanguageTogglePill(),
             ),
           ],
         ),

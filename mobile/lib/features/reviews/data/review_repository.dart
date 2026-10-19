@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/storage/local_data_storage.dart';
 import '../domain/review_models.dart';
 
 final reviewRepositoryProvider = Provider<ReviewRepository>((ref) {
   final dio = ref.watch(dioProvider);
-  return ReviewRepository(dio);
+  final localData = ref.watch(localDataStorageProvider);
+  return ReviewRepository(dio, localData);
 });
 
 class SubmitReviewResult {
@@ -32,10 +34,15 @@ class SubmitReviewResult {
 
 class ReviewRepository {
   final Dio _dio;
+  final LocalDataStorage _localData;
 
-  ReviewRepository(this._dio);
+  ReviewRepository(this._dio, this._localData);
 
   Future<List<BlindReviewCard>> getSwipeFeed({int limit = 10}) async {
+    if (_localData.isGuestMode()) {
+      return _localData.getDemoReviewFeed();
+    }
+
     try {
       final response = await _dio.get(
         ApiEndpoints.reviewFeed,
@@ -53,6 +60,13 @@ class ReviewRepository {
     required String submissionId,
     required bool isApproved,
   }) async {
+    if (_localData.isGuestMode()) {
+      return await _localData.submitReviewVote(
+        submissionId: submissionId,
+        isApproved: isApproved,
+      );
+    }
+
     try {
       final response = await _dio.post(
         ApiEndpoints.submitReview,
@@ -80,6 +94,19 @@ class ReviewRepository {
   }
 
   Future<ReviewQuotaStatus> getQuotaStatus() async {
+    if (_localData.isGuestMode()) {
+      final guest = _localData.getGuestUser();
+      return ReviewQuotaStatus(
+        dailyReviewsDone: 5,
+        targetQuota: 5,
+        quotaReached: true,
+        remainingToQuota: 0,
+        pendingProofsLocked: 0,
+        inQueueProofsActive: 1,
+        streakCount: guest.streakCount,
+      );
+    }
+
     try {
       final response = await _dio.get(ApiEndpoints.reviewQuota);
       return ReviewQuotaStatus.fromJson(response.data as Map<String, dynamic>);

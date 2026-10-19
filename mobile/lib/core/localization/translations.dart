@@ -140,6 +140,13 @@ class Translations {
   String get enterPasswordPrompt => isVietnamese ? 'Vui lòng nhập mật khẩu' : 'Please enter your password';
   String get passwordLengthPrompt => isVietnamese ? 'Mật khẩu phải từ 6 ký tự' : 'Password must be at least 6 characters';
   String get enterNamePrompt => isVietnamese ? 'Vui lòng nhập tên hiển thị' : 'Please enter your name';
+  String get continueAsGuest => isVietnamese ? 'Dùng với tư cách Khách' : 'Continue as Guest';
+  String get guestModeDesc => isVietnamese
+      ? 'Dữ liệu được lưu trực tiếp trên thiết bị của bạn'
+      : 'Data is saved locally on your device';
+  String get orDivider => isVietnamese ? 'HOẶC' : 'OR';
+  String get guestName => isVietnamese ? 'Khách' : 'Guest';
+  String get guestModeBanner => isVietnamese ? 'Chế độ Khách (Lưu trên máy)' : 'Guest Mode (Local Storage)';
 
   // Roadmap & Tasks
   String get dailyRoadmap => isVietnamese ? 'Lộ trình hàng ngày' : 'Daily Roadmap';

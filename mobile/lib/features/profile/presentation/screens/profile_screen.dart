@@ -81,6 +81,26 @@ class ProfileScreen extends ConsumerWidget {
                                     color: AppColors.textSecondary,
                                   ),
                                 ),
+                                if (user.id == 'guest_local_user')
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 6),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: AppColors.primary, width: 0.8),
+                                      ),
+                                      child: Text(
+                                        tr.guestModeBanner,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
                           ),
