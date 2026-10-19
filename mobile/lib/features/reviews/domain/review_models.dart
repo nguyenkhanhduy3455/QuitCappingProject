@@ -7,6 +7,10 @@ class BlindReviewCard {
   final String imageUrl;
   final DateTime createdAt;
   final bool isOwnSubmission;
+  final int upvotes;
+  final int downvotes;
+  final int totalReviews;
+  final String status;
 
   BlindReviewCard({
     required this.submissionId,
@@ -17,6 +21,10 @@ class BlindReviewCard {
     required this.imageUrl,
     required this.createdAt,
     this.isOwnSubmission = false,
+    this.upvotes = 0,
+    this.downvotes = 0,
+    this.totalReviews = 0,
+    this.status = 'in_queue',
   });
 
   String get cleanTaskTitle {
@@ -35,6 +43,10 @@ class BlindReviewCard {
           ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
       isOwnSubmission: json['isOwnSubmission'] ?? false,
+      upvotes: json['upvotes'] ?? 0,
+      downvotes: json['downvotes'] ?? 0,
+      totalReviews: json['totalReviews'] ?? 0,
+      status: json['status'] ?? 'in_queue',
     );
   }
 }

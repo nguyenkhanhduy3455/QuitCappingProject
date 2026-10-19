@@ -269,6 +269,17 @@ class Translations {
   String get lowQueueBypassNotice => isVietnamese
       ? 'Hàng đợi có dưới 5 bài, bài nộp được đưa thẳng vào hàng đợi.'
       : 'Queue has < 5 tasks, proofs enter queue directly.';
+  String get reviewQueueTitle => isVietnamese ? 'Danh sách hàng đợi' : 'Queue Submissions';
+  String reviewedCount(int count) => isVietnamese ? '$count/5 đã duyệt' : '$count/5 reviewed';
+  String get ownSubmissionShort => isVietnamese ? 'Của bạn' : 'Yours';
+  String get reviewTaskDetailTitle => isVietnamese ? 'Chi tiết bằng chứng' : 'Evidence Detail';
+  String get reviewActionTitle => isVietnamese ? 'Bình chọn đánh giá' : 'Cast Review Vote';
+  String get approveButtonLabel => isVietnamese ? 'ĐẠT (Hợp lệ)' : 'APPROVE';
+  String get rejectButtonLabel => isVietnamese ? 'TỪ CHỐI' : 'REJECT';
+  String get voteSubmittedSuccess => isVietnamese ? 'Đã gửi đánh giá thành công! (+5 điểm)' : 'Evaluation recorded! (+5 pts)';
+  String get cannotReviewOwnDetail => isVietnamese
+      ? 'Đây là bài nộp của bạn đang trong hàng đợi cộng đồng. Bạn không thể tự đánh giá bài của mình.'
+      : 'This is your own submission in the queue. You cannot evaluate your own submission.';
   String get antiCheatRulesTitle => isVietnamese ? 'Luật Chống Gian Lận & Đánh Giá' : 'Anti-Cheat & Review Rules';
   String get rulesContent => isVietnamese
       ? '1. Hạn mức Give-to-Get:\nBạn phải đánh giá ít nhất 5 bài nộp mỗi ngày trước khi bài của bạn được cộng đồng chấm.\n\n'

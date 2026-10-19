@@ -31,6 +31,10 @@ export interface BlindReviewCard {
   imageUrl: string;
   createdAt: Date;
   isOwnSubmission: boolean;
+  upvotes: number;
+  downvotes: number;
+  totalReviews: number;
+  status: string;
 }
 
 @Injectable()
@@ -159,6 +163,8 @@ export class ReviewsService implements OnModuleInit, OnModuleDestroy {
       .map((s) => {
         const task = s.taskId as unknown as TaskDocument;
         const isOwn = s.userId.toString() === userId;
+        const totalReviews =
+          s.reviewedByUserIds?.length ?? ((s.upvotes || 0) + (s.downvotes || 0));
         return {
           submissionId: s._id.toString(),
           taskId: task._id.toString(),
@@ -168,6 +174,10 @@ export class ReviewsService implements OnModuleInit, OnModuleDestroy {
           imageUrl: s.imageUrl,
           createdAt: s.createdAt,
           isOwnSubmission: isOwn,
+          upvotes: s.upvotes || 0,
+          downvotes: s.downvotes || 0,
+          totalReviews,
+          status: s.status,
         };
       });
   }

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/translations.dart';
 import '../../../auth/presentation/auth_controller.dart';
-import '../review_controller.dart';
-import '../widgets/swipe_card.dart';
 import '../../domain/review_models.dart';
+import '../review_controller.dart';
+import 'review_detail_screen.dart';
 
 class ReviewFeedScreen extends ConsumerStatefulWidget {
   const ReviewFeedScreen({super.key});
@@ -15,8 +16,6 @@ class ReviewFeedScreen extends ConsumerStatefulWidget {
 }
 
 class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
-  final GlobalKey<SwipeCardState> _currentCardKey = GlobalKey<SwipeCardState>();
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(reviewControllerProvider);
@@ -47,24 +46,76 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Top Give-to-Get Engine Progress Bar
-            _buildGiveToGetHeader(quota, tr),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await ref.read(reviewControllerProvider.notifier).loadFeed();
+            await ref.read(reviewControllerProvider.notifier).refreshQuota();
+          },
+          color: AppColors.primary,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Top Give-to-Get Engine Progress Bar
+              _buildGiveToGetHeader(quota, tr),
 
-            // Swipe Deck Area
-            Expanded(
-              child: state.isLoading && state.feed.isEmpty
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-                  : state.feed.isEmpty
-                      ? _buildEmptyFeedState(tr)
-                      : _buildSwipeDeck(state),
-            ),
+              // Queue Section Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${tr.reviewQueueTitle} (${state.feed.length})',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () => ref.read(reviewControllerProvider.notifier).loadFeed(),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.refresh, size: 14, color: AppColors.primary),
+                            const SizedBox(width: 4),
+                            Text(
+                              tr.refreshQueue,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
-            // Bottom Action Buttons
-            if (state.feed.isNotEmpty) _buildBottomActionButtons(state),
-            const SizedBox(height: 12),
-          ],
+              // Compact Queue List Area
+              Expanded(
+                child: state.isLoading && state.feed.isEmpty
+                    ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                    : state.feed.isEmpty
+                        ? _buildEmptyFeedState(tr)
+                        : ListView.separated(
+                            padding: const EdgeInsets.only(bottom: 24, top: 4),
+                            itemCount: state.feed.length,
+                            separatorBuilder: (_, _) => const SizedBox(height: 8),
+                            itemBuilder: (context, index) {
+                              final card = state.feed[index];
+                              return _buildQueueRowItem(card, tr);
+                            },
+                          ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -78,7 +129,7 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
     final progress = isBypass ? 1.0 : (reviewsDone / target).clamp(0.0, 1.0);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -146,174 +197,159 @@ class _ReviewFeedScreenState extends ConsumerState<ReviewFeedScreen> {
     );
   }
 
-  Widget _buildSwipeDeck(ReviewState state) {
-    final cards = state.feed;
-    final frontCard = cards.first;
+  Widget _buildQueueRowItem(BlindReviewCard card, Translations tr) {
+    final resolvedImageUrl = _resolveImageUrl(card.imageUrl);
 
-    return Center(
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Background card (peeking through)
-          if (cards.length > 1)
-            Transform.scale(
-              scale: 0.94,
-              child: Opacity(
-                opacity: 0.6,
-                child: SwipeCard(
-                  key: ValueKey(cards[1].submissionId),
-                  card: cards[1],
-                  isFront: false,
-                  onSwiped: (_) {},
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: card.isOwnSubmission
+              ? AppColors.primary.withValues(alpha: 0.5)
+              : AppColors.cardBorder,
+          width: 1.2,
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _openReviewDetail(card),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              // Small Thumbnail Image (hình nhỏ)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  width: 52,
+                  height: 52,
+                  color: AppColors.surfaceVariant,
+                  child: Image.network(
+                    resolvedImageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (ctx, err, stack) => const Center(
+                      child: Icon(Icons.broken_image, size: 24, color: AppColors.textSecondary),
+                    ),
+                    loadingBuilder: (ctx, child, progress) {
+                      if (progress == null) return child;
+                      return const Center(
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(width: 12),
 
-          // Front interactive card
-          SwipeCard(
-            key: _currentCardKey,
-            card: frontCard,
-            isFront: true,
-            onSwiped: (isApproved) {
-              ref.read(reviewControllerProvider.notifier).submitVote(
-                    card: frontCard,
-                    isApproved: isApproved,
-                  );
-              ref.read(authControllerProvider.notifier).refreshProfile();
-            },
+              // Title, Status & Reviewers Count (tên, trạng thái, số người duyệt)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      card.cleanTaskTitle,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        // Status Badge (trạng thái)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: card.isOwnSubmission
+                                ? AppColors.primary.withValues(alpha: 0.15)
+                                : AppColors.inQueue.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            card.isOwnSubmission ? tr.ownSubmissionShort : tr.inQueueBadge,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: card.isOwnSubmission ? AppColors.primary : AppColors.inQueue,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // Number of Reviewers (số người duyệt)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.how_to_reg, size: 12, color: AppColors.textSecondary),
+                            const SizedBox(width: 3),
+                            Text(
+                              tr.reviewedCount(card.totalReviews),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              // Open Button (Nút Mở / Xem)
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: card.isOwnSubmission ? AppColors.surfaceVariant : AppColors.primary,
+                  foregroundColor: card.isOwnSubmission ? AppColors.textPrimary : Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  elevation: 0,
+                ),
+                onPressed: () => _openReviewDetail(card),
+                icon: const Icon(Icons.arrow_forward, size: 14),
+                label: Text(
+                  tr.openTask,
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildBottomActionButtons(ReviewState state) {
-    final tr = ref.watch(translationsProvider);
-    final frontCard = state.feed.first;
-
-    if (frontCard.isOwnSubmission) {
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.person, color: AppColors.primary, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    tr.yourSubmissionTag,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    tr.yourSubmissionSubtitle,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: AppColors.textSecondary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            ElevatedButton.icon(
-              onPressed: () {
-                ref.read(reviewControllerProvider.notifier).skipCard(frontCard);
-              },
-              icon: const Icon(Icons.skip_next, size: 18),
-              label: Text(tr.skipOwnSubmissionButton),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.surfaceVariant,
-                foregroundColor: AppColors.textPrimary,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // Reject Button (Swipe Left)
-          InkWell(
-            onTap: () {
-              _currentCardKey.currentState?.swipeLeft();
-            },
-            borderRadius: BorderRadius.circular(36),
-            child: Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.surface,
-                border: Border.all(color: AppColors.reject, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.reject.withValues(alpha: 0.2),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Icon(Icons.close, color: AppColors.reject, size: 32),
-            ),
-          ),
-
-          // Approve Button (Swipe Right)
-          InkWell(
-            onTap: () {
-              _currentCardKey.currentState?.swipeRight();
-            },
-            borderRadius: BorderRadius.circular(36),
-            child: Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.surface,
-                border: Border.all(color: AppColors.approve, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.approve.withValues(alpha: 0.2),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Icon(Icons.check, color: AppColors.approve, size: 32),
-            ),
-          ),
-        ],
-      ),
+  Future<void> _openReviewDetail(BlindReviewCard card) async {
+    final updated = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ReviewDetailScreen(card: card)),
     );
+    if (updated == true && mounted) {
+      await ref.read(reviewControllerProvider.notifier).loadFeed();
+      await ref.read(reviewControllerProvider.notifier).refreshQuota();
+      ref.read(authControllerProvider.notifier).refreshProfile();
+    }
+  }
+
+  String _resolveImageUrl(String url) {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    final baseUrl = ApiEndpoints.baseUrl;
+    return '$baseUrl$url';
   }
 
   Widget _buildEmptyFeedState(Translations tr) {
