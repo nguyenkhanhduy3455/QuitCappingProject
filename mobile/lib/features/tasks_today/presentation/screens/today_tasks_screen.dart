@@ -4,9 +4,9 @@ import '../../../../app.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/translations.dart';
 import '../../../auth/presentation/auth_controller.dart';
-import '../../../proof/presentation/widgets/submit_proof_dialog.dart';
 import '../../../roadmap/domain/task_model.dart';
 import '../today_tasks_controller.dart';
+import 'task_detail_screen.dart';
 
 class TodayTasksScreen extends ConsumerWidget {
   const TodayTasksScreen({super.key});
@@ -23,26 +23,27 @@ class TodayTasksScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => ref.read(todayTasksControllerProvider.notifier).loadTodayTasks(),
+            tooltip: 'Refresh',
+            onPressed: () => ref.read(todayTasksControllerProvider.notifier).refresh(),
           ),
         ],
       ),
       body: state.isLoading && state.selectedGoal == null
           ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-          : state.selectedGoal == null || state.tasks.isEmpty
+          : state.selectedGoal == null && state.userGoals.isEmpty
               ? _buildEmptyState(context, ref, tr)
               : RefreshIndicator(
                   color: AppColors.primary,
-                  onRefresh: () => ref.read(todayTasksControllerProvider.notifier).loadTodayTasks(),
+                  onRefresh: () => ref.read(todayTasksControllerProvider.notifier).refresh(),
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     children: [
                       // Header Progress & Streak Summary Card
                       _buildHeaderCard(context, state, authState, tr),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
-                      // Goal Selector / Active Goal Badge
-                      _buildGoalSelector(context, ref, state, tr),
+                      // Search Icon & 7 Recent Days Chips
+                      _buildDateSelectionBar(context, ref, state, tr),
                       const SizedBox(height: 16),
 
                       // Section Title
@@ -70,8 +71,19 @@ class TodayTasksScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
 
-                      // Task List Cards
-                      ...state.tasks.map((task) => _buildTaskCard(context, ref, task, tr)),
+                      // Clean Task List Cards (Only Title & "Mở" button)
+                      if (state.tasks.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 32),
+                          child: Center(
+                            child: Text(
+                              tr.noTasksToday,
+                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                            ),
+                          ),
+                        )
+                      else
+                        ...state.tasks.map((task) => _buildCleanTaskCard(context, task, tr)),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -86,10 +98,17 @@ class TodayTasksScreen extends ConsumerWidget {
     Translations tr,
   ) {
     final streak = authState.user?.streakCount ?? 0;
+    final d = state.selectedDate;
     final now = DateTime.now();
-    final dateStr = tr.isVietnamese
-        ? 'Hôm nay, ${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}'
-        : 'Today, ${now.day}/${now.month}/${now.year}';
+    final isToday = d.year == now.year && d.month == now.month && d.day == now.day;
+
+    final dateStr = isToday
+        ? (tr.isVietnamese
+            ? 'Hôm nay, ${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}'
+            : 'Today, ${d.day}/${d.month}/${d.year}')
+        : (tr.isVietnamese
+            ? 'Ngày ${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}'
+            : 'Date: ${d.day}/${d.month}/${d.year}');
 
     final percent = (state.completionProgress * 100).round();
 
@@ -174,308 +193,294 @@ class TodayTasksScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildGoalSelector(
+  Widget _buildDateSelectionBar(
     BuildContext context,
     WidgetRef ref,
     TodayTasksState state,
     Translations tr,
   ) {
-    final goal = state.selectedGoal;
-    if (goal == null) return const SizedBox.shrink();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
 
-    final goals = state.userGoals;
+    // 7 most recent days (Today, D-1, D-2, D-3, D-4, D-5, D-6)
+    final recentDays = List.generate(7, (i) => today.subtract(Duration(days: i)));
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  tr.categoryName(goal.category).toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                tr.dayXOfY
-                    .replaceAll('{x}', '${state.dayNumber}')
-                    .replaceAll('{y}', '${goal.durationDays}'),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const Spacer(),
-              if (goals.length > 1)
-                InkWell(
-                  onTap: () => _showGoalSelectionModal(context, ref, state, tr),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          tr.switchGoal,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Icon(Icons.arrow_drop_down, color: AppColors.primary, size: 18),
-                      ],
+    final selectedDateOnly = DateTime(
+      state.selectedDate.year,
+      state.selectedDate.month,
+      state.selectedDate.day,
+    );
+
+    final isCustomDate = !recentDays.any((d) => d == selectedDateOnly);
+
+    return Row(
+      children: [
+        // Search Icon Button
+        IconButton(
+          style: IconButton.styleFrom(
+            backgroundColor: AppColors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: AppColors.cardBorder),
+            ),
+            padding: const EdgeInsets.all(10),
+          ),
+          icon: const Icon(Icons.search, color: AppColors.primary, size: 22),
+          tooltip: tr.searchByDate,
+          onPressed: () => _showDateSearchDialog(context, ref, state, tr),
+        ),
+        const SizedBox(width: 8),
+
+        // Horizontal Chips List for 7 days
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                if (isCustomDate) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: FilterChip(
+                      selected: true,
+                      selectedColor: AppColors.primary,
+                      backgroundColor: AppColors.surface,
+                      label: Text(
+                        '${selectedDateOnly.day.toString().padLeft(2, '0')}/${selectedDateOnly.month.toString().padLeft(2, '0')}',
+                      ),
+                      labelStyle: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      side: const BorderSide(color: AppColors.primary),
+                      onSelected: (_) {},
                     ),
                   ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            goal.title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+                ],
+                ...recentDays.map((date) {
+                  final isSelected = !isCustomDate && date == selectedDateOnly;
+                  final isToday = date == today;
+                  final dateLabel =
+                      '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
+                  final displayText = isToday ? '$dateLabel (${tr.todayLabel})' : dateLabel;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: FilterChip(
+                      selected: isSelected,
+                      selectedColor: AppColors.primary,
+                      backgroundColor: AppColors.surface,
+                      label: Text(displayText),
+                      labelStyle: TextStyle(
+                        color: isSelected ? Colors.white : AppColors.textSecondary,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontSize: 12,
+                      ),
+                      side: BorderSide(
+                        color: isSelected ? AppColors.primary : AppColors.cardBorder,
+                      ),
+                      onSelected: (_) {
+                        ref.read(todayTasksControllerProvider.notifier).selectDate(date);
+                      },
+                    ),
+                  );
+                }),
+              ],
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showDateSearchDialog(
+    BuildContext context,
+    WidgetRef ref,
+    TodayTasksState state,
+    Translations tr,
+  ) {
+    final d = state.selectedDate;
+    final textController = TextEditingController(
+      text: '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}',
+    );
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.cardBorder),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.calendar_month, color: AppColors.primary),
+            const SizedBox(width: 8),
+            Text(tr.searchByDate, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              tr.enterDatePrompt,
+              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: textController,
+              keyboardType: TextInputType.datetime,
+              decoration: InputDecoration(
+                hintText: 'dd/MM/yyyy',
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.date_range, color: AppColors.primary),
+                  onPressed: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: state.selectedDate,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime.now(),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: const ColorScheme.dark(
+                              primary: AppColors.primary,
+                              surface: AppColors.surface,
+                            ),
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
+                    if (picked != null) {
+                      textController.text =
+                          '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(tr.cancel, style: const TextStyle(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final raw = textController.text.trim();
+              final parts = raw.split('/');
+              if (parts.length == 3) {
+                final day = int.tryParse(parts[0]);
+                final month = int.tryParse(parts[1]);
+                final year = int.tryParse(parts[2]);
+                if (day != null && month != null && year != null) {
+                  try {
+                    final date = DateTime(year, month, day);
+                    if (date.isBefore(DateTime.now().add(const Duration(days: 1)))) {
+                      ref.read(todayTasksControllerProvider.notifier).selectDate(date);
+                      Navigator.pop(ctx);
+                      return;
+                    }
+                  } catch (_) {}
+                }
+              }
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(tr.invalidDate), backgroundColor: AppColors.reject),
+              );
+            },
+            child: Text(tr.confirm),
           ),
         ],
       ),
     );
   }
 
-  void _showGoalSelectionModal(
+  Widget _buildCleanTaskCard(
     BuildContext context,
-    WidgetRef ref,
-    TodayTasksState state,
-    Translations tr,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        side: BorderSide(color: AppColors.cardBorder),
-      ),
-      builder: (ctx) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  child: Text(
-                    tr.switchGoal,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                const Divider(color: AppColors.cardBorder),
-                ...state.userGoals.map((g) {
-                  final isSelected = g.id == state.selectedGoal?.id;
-                  return ListTile(
-                    leading: Icon(
-                      isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-                      color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                    ),
-                    title: Text(
-                      g.title,
-                      style: TextStyle(
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                      ),
-                    ),
-                    subtitle: Text(
-                      '${tr.categoryName(g.category)} • ${tr.isVietnamese ? "Ngày" : "Day"} ${g.currentDay}/${g.durationDays}',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                    ),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      ref.read(todayTasksControllerProvider.notifier).selectGoal(g);
-                    },
-                  );
-                }),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildTaskCard(
-    BuildContext context,
-    WidgetRef ref,
     TaskModel task,
     Translations tr,
   ) {
-    final submission = task.latestSubmission;
-
     return Card(
-      margin: const EdgeInsets.only(bottom: 14),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title and Completion icon
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    task.title,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: task.isCompleted ? AppColors.textSecondary : AppColors.textPrimary,
-                      decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                _buildStatusBadge(task, tr),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              task.description,
-              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.3),
-            ),
-            const SizedBox(height: 12),
-
-            // Concrete Evidence Prompt Box
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.cardBorder),
+      margin: const EdgeInsets.only(bottom: 10),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: const BorderSide(color: AppColors.cardBorder),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => TaskDetailScreen(task: task)),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          child: Row(
+            children: [
+              // Check / Status icon
+              Icon(
+                task.isCompleted
+                    ? Icons.check_circle
+                    : (task.latestSubmission != null
+                        ? Icons.access_time_filled
+                        : Icons.radio_button_unchecked),
+                color: task.isCompleted
+                    ? AppColors.approve
+                    : (task.latestSubmission != null
+                        ? AppColors.pending
+                        : AppColors.textSecondary),
+                size: 22,
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.camera_alt, size: 16, color: AppColors.primary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${tr.proofRequired}${task.evidencePrompt}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
+              const SizedBox(width: 12),
 
-            // Action / Status Area
-            if (!task.isCompleted) ...[
-              if (submission == null || submission.status == 'rejected') ...[
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      backgroundColor: submission?.status == 'rejected' ? AppColors.reject : AppColors.primary,
-                    ),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (_) => SubmitProofDialog(task: task),
-                      );
-                    },
-                    icon: Icon(
-                      submission?.status == 'rejected' ? Icons.replay : Icons.upload_file,
-                      size: 16,
-                    ),
-                    label: Text(
-                      submission?.status == 'rejected' ? tr.retryProof : tr.submitProof,
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                  ),
-                ),
-              ] else if (submission.status == 'pending_quota') ...[
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.pending.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.pending.withValues(alpha: 0.4)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.lock_clock, size: 18, color: AppColors.pending),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          tr.lockedNotice,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.pending,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+              // Title & Status Badge
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      task.title,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: task.isCompleted ? AppColors.textSecondary : AppColors.textPrimary,
+                        decoration: task.isCompleted ? TextDecoration.lineThrough : null,
                       ),
-                    ],
-                  ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    _buildStatusBadge(task, tr),
+                  ],
                 ),
-              ] else if (submission.status == 'in_queue') ...[
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.inQueue.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.inQueue.withValues(alpha: 0.4)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.how_to_vote, size: 18, color: AppColors.inQueue),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          tr.inQueueNotice(submission.upvotes, submission.downvotes),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.inQueue,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+              ),
+              const SizedBox(width: 10),
+
+              // Button "Mở"
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-              ],
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => TaskDetailScreen(task: task)),
+                  );
+                },
+                icon: const Icon(Icons.arrow_forward, size: 14),
+                label: Text(
+                  tr.openTask,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ),
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -484,25 +489,14 @@ class TodayTasksScreen extends ConsumerWidget {
   Widget _buildStatusBadge(TaskModel task, Translations tr) {
     if (task.isCompleted) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
           color: AppColors.approve.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(4),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.check_circle, size: 14, color: AppColors.approve),
-            const SizedBox(width: 4),
-            Text(
-              tr.approvedBadge,
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: AppColors.approve,
-              ),
-            ),
-          ],
+        child: Text(
+          tr.approvedBadge,
+          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.approve),
         ),
       );
     }
@@ -510,18 +504,14 @@ class TodayTasksScreen extends ConsumerWidget {
     final sub = task.latestSubmission;
     if (sub == null) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
           color: AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(4),
         ),
         child: Text(
           tr.pendingProofBadge,
-          style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textSecondary,
-          ),
+          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
         ),
       );
     }
@@ -529,50 +519,38 @@ class TodayTasksScreen extends ConsumerWidget {
     switch (sub.status) {
       case 'pending_quota':
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
             color: AppColors.pending.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
             tr.lockedBadge,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: AppColors.pending,
-            ),
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.pending),
           ),
         );
       case 'in_queue':
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
             color: AppColors.inQueue.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
             tr.inQueueBadge,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: AppColors.inQueue,
-            ),
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.inQueue),
           ),
         );
       case 'rejected':
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
             color: AppColors.reject.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
             tr.rejectedBadge,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: AppColors.reject,
-            ),
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.reject),
           ),
         );
       default:

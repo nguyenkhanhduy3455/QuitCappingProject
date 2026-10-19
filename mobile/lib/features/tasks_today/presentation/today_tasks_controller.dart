@@ -8,23 +8,26 @@ class TodayTasksState {
   final bool isLoading;
   final List<GoalModel> userGoals;
   final GoalModel? selectedGoal;
+  final DateTime selectedDate;
   final int dayNumber;
   final List<TaskModel> tasks;
   final String? errorMessage;
 
-  const TodayTasksState({
+  TodayTasksState({
     required this.isLoading,
     required this.userGoals,
     this.selectedGoal,
+    required this.selectedDate,
     required this.dayNumber,
     required this.tasks,
     this.errorMessage,
   });
 
-  factory TodayTasksState.initial() => const TodayTasksState(
+  factory TodayTasksState.initial() => TodayTasksState(
         isLoading: false,
         userGoals: [],
         selectedGoal: null,
+        selectedDate: DateTime.now(),
         dayNumber: 1,
         tasks: [],
       );
@@ -34,6 +37,7 @@ class TodayTasksState {
     List<GoalModel>? userGoals,
     GoalModel? selectedGoal,
     bool clearSelectedGoal = false,
+    DateTime? selectedDate,
     int? dayNumber,
     List<TaskModel>? tasks,
     String? errorMessage,
@@ -43,6 +47,7 @@ class TodayTasksState {
       isLoading: isLoading ?? this.isLoading,
       userGoals: userGoals ?? this.userGoals,
       selectedGoal: clearSelectedGoal ? null : (selectedGoal ?? this.selectedGoal),
+      selectedDate: selectedDate ?? this.selectedDate,
       dayNumber: dayNumber ?? this.dayNumber,
       tasks: tasks ?? this.tasks,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
@@ -68,6 +73,15 @@ class TodayTasksController extends StateNotifier<TodayTasksState> {
     loadTodayTasks();
   }
 
+  int _resolveDayNumberForDate(GoalModel goal, DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final target = DateTime(date.year, date.month, date.day);
+    final daysDiff = today.difference(target).inDays;
+    final dayNum = goal.currentDay - daysDiff;
+    return dayNum.clamp(1, goal.durationDays);
+  }
+
   Future<void> loadTodayTasks() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
@@ -90,9 +104,11 @@ class TodayTasksController extends StateNotifier<TodayTasksState> {
         targetGoal = goals.firstWhere((g) => g.isActive, orElse: () => goals.first);
       }
 
+      final dayNumber = _resolveDayNumberForDate(targetGoal, state.selectedDate);
+
       final result = await _goalRepo.getDailyTasksDetailed(
         goalId: targetGoal.id,
-        dayNumber: targetGoal.currentDay,
+        dayNumber: dayNumber,
       );
 
       state = state.copyWith(
@@ -112,13 +128,54 @@ class TodayTasksController extends StateNotifier<TodayTasksState> {
     }
   }
 
+  Future<void> selectDate(DateTime date) async {
+    state = state.copyWith(isLoading: true, selectedDate: date, clearError: true);
+    try {
+      GoalModel? targetGoal = state.selectedGoal;
+      if (targetGoal == null) {
+        final goals = await _goalRepo.getUserGoals();
+        if (goals.isEmpty) {
+          state = state.copyWith(
+            isLoading: false,
+            selectedDate: date,
+            tasks: [],
+          );
+          return;
+        }
+        targetGoal = goals.firstWhere((g) => g.isActive, orElse: () => goals.first);
+      }
+
+      final dayNumber = _resolveDayNumberForDate(targetGoal, date);
+      final result = await _goalRepo.getDailyTasksDetailed(
+        goalId: targetGoal.id,
+        dayNumber: dayNumber,
+      );
+
+      state = state.copyWith(
+        isLoading: false,
+        selectedGoal: targetGoal,
+        selectedDate: date,
+        dayNumber: result.dayNumber,
+        tasks: result.tasks,
+      );
+    } on ApiException catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.message);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Failed to switch date tasks: ${e.toString()}',
+      );
+    }
+  }
+
   Future<void> selectGoal(GoalModel goal) async {
     if (state.selectedGoal?.id == goal.id && state.tasks.isNotEmpty) return;
     state = state.copyWith(isLoading: true, selectedGoal: goal, clearError: true);
     try {
+      final dayNumber = _resolveDayNumberForDate(goal, state.selectedDate);
       final result = await _goalRepo.getDailyTasksDetailed(
         goalId: goal.id,
-        dayNumber: goal.currentDay,
+        dayNumber: dayNumber,
       );
       state = state.copyWith(
         isLoading: false,
@@ -155,9 +212,11 @@ class TodayTasksController extends StateNotifier<TodayTasksState> {
         targetGoal = goals.firstWhere((g) => g.isActive, orElse: () => goals.first);
       }
 
+      final dayNumber = _resolveDayNumberForDate(targetGoal, state.selectedDate);
+
       final result = await _goalRepo.getDailyTasksDetailed(
         goalId: targetGoal.id,
-        dayNumber: targetGoal.currentDay,
+        dayNumber: dayNumber,
       );
 
       state = state.copyWith(

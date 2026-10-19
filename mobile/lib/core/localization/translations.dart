@@ -46,6 +46,18 @@ class Translations {
   String get goToGoals => isVietnamese ? 'ĐẾN MỤC TIÊU' : 'GO TO GOALS';
   String get activeGoal => isVietnamese ? 'Mục tiêu đang chọn' : 'Active Goal';
   String get switchGoal => isVietnamese ? 'Đổi mục tiêu' : 'Switch Goal';
+  String get openTask => isVietnamese ? 'Mở' : 'Open';
+  String get searchByDate => isVietnamese ? 'Tìm ngày lịch sử' : 'Search by date';
+  String get enterDatePrompt => isVietnamese
+      ? 'Nhập hoặc chọn ngày trong lịch sử (dd/MM/yyyy):'
+      : 'Enter or pick a date in history (dd/MM/yyyy):';
+  String get selectDate => isVietnamese ? 'Chọn ngày' : 'Select Date';
+  String get invalidDate => isVietnamese ? 'Ngày không hợp lệ' : 'Invalid date format';
+  String get taskDetail => isVietnamese ? 'Chi tiết nhiệm vụ' : 'Task Details';
+  String get taskDescription => isVietnamese ? 'Mô tả nhiệm vụ' : 'Task Description';
+  String get submittedEvidence => isVietnamese ? 'Bằng chứng đã nộp' : 'Submitted Evidence';
+  String get submitEvidenceNow => isVietnamese ? 'Nộp ảnh bằng chứng' : 'Submit Photo Evidence';
+  String get todayLabel => isVietnamese ? 'Hôm nay' : 'Today';
 
   // Tab 2: Goals Management
   String get yourGoals => isVietnamese ? 'Danh sách mục tiêu' : 'Your Goals';
