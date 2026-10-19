@@ -382,11 +382,6 @@ class TodayTasksScreen extends ConsumerWidget {
   ) {
     final titleController = TextEditingController();
     final descController = TextEditingController();
-    final evidenceController = TextEditingController(
-      text: tr.isVietnamese
-          ? 'Chụp ảnh xác nhận hoàn thành nhiệm vụ này'
-          : 'Take a photo verifying completion of this task',
-    );
     final formKey = GlobalKey<FormState>();
     bool isSaving = false;
 
@@ -439,20 +434,8 @@ class TodayTasksScreen extends ConsumerWidget {
                   TextFormField(
                     controller: descController,
                     style: const TextStyle(color: AppColors.textPrimary),
-                    maxLines: 2,
+                    maxLines: 3,
                     decoration: InputDecoration(hintText: tr.taskDescHint),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    tr.proofRequired.replaceAll(':', ''),
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                  ),
-                  const SizedBox(height: 6),
-                  TextFormField(
-                    controller: evidenceController,
-                    style: const TextStyle(color: AppColors.textPrimary),
-                    maxLines: 2,
-                    decoration: InputDecoration(hintText: tr.evidenceRequirementHint),
                   ),
                 ],
               ),
@@ -475,7 +458,9 @@ class TodayTasksScreen extends ConsumerWidget {
                               dayNumber: state.dayNumber > 0 ? state.dayNumber : 1,
                               title: titleController.text.trim(),
                               description: descController.text.trim(),
-                              evidencePrompt: evidenceController.text.trim(),
+                              evidencePrompt: tr.isVietnamese
+                                  ? 'Chụp ảnh xác nhận hoàn thành nhiệm vụ này'
+                                  : 'Take a photo verifying completion of this task',
                             );
                         await ref.read(todayTasksControllerProvider.notifier).refresh();
                         await ref.read(roadmapControllerProvider.notifier).refreshCurrentTasks();
